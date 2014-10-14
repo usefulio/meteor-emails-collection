@@ -342,7 +342,64 @@ if (Meteor.isServer) {
 			next();
 
 		}, 10);
-		
+	});
 
+	Tinytest.add('Emails - processor - uses templates', function (test) {
+
+		// reset the Emails collection
+		reset({
+			queue: false
+			, persist: false
+			, autoprocess: false
+			, domain: 'example.com'
+			, defaultFromAddress: null
+		});
+
+		Emails.send({
+			fromId: joeBlow
+			, toId: samBond
+			, message: 'hi there'
+			, subject: 'hi there'
+			, template: 'simple'
+		});
+		// console.log(Template);
+		test.equal(emails.length, 1);
+		test.equal(emails[0].from, '"joe blow" <user_' + joeBlow + '@example.com>');
+		test.equal(emails[0].to, '"sam bond" <sambond@sambond.com>');
+		test.equal(emails[0].threadId, [samBond, joeBlow].sort().join("_"));
+		test.equal(emails[0].subject, 'hi there');
+		// XXX
+		// test.equal(emails[0].text, 'hi there');
+		test.equal(emails[0].html, '<p>hi there</p>');
+	});
+
+	Tinytest.add('Emails - processor - templates use helpers', function (test) {
+
+		// reset the Emails collection
+		reset({
+			queue: false
+			, persist: false
+			, autoprocess: false
+			, domain: 'example.com'
+			, defaultFromAddress: null
+		});
+
+		Emails.send({
+			fromId: joeBlow
+			, toId: samBond
+			, a: 1
+			, b: 1
+			, subject: 'hi there'
+			, template: 'withHelpers'
+		});
+		// console.log(Template);
+		test.equal(emails.length, 1);
+		test.equal(emails[0].from, '"joe blow" <user_' + joeBlow + '@example.com>');
+		test.equal(emails[0].to, '"sam bond" <sambond@sambond.com>');
+		test.equal(emails[0].threadId, [samBond, joeBlow].sort().join("_"));
+		test.equal(emails[0].subject, 'hi there');
+		// XXX
+		// test.equal(emails[0].text, 'hi there');
+		test.equal(emails[0].html, '<p>sum: 2</p>');
 	});
 }

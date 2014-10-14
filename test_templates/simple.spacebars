@@ -1,0 +1,3 @@
+<template name="simple">
+	<p>{{message}}</p>
+</template>

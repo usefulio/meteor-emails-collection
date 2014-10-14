@@ -1,0 +1,3 @@
+<template name="withHelpers">
+	<p>sum: {{sum}}</p>
+</template>

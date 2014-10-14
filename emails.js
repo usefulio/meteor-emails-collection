@@ -235,7 +235,11 @@ Emails.getText = function (email, cache) {
 
 Emails.getHtml = function (email, cache) {
 	// sets the html email copy
-	return email.text.split('\n').join('<br>\n');
+	if (email.template && Template[email.template]) {
+		return Blaze.toHTMLWithData(Template[email.template], _.extend({}, email, cache));
+	} else {
+		return email.text.split('\n').join('<br>\n');
+	}
 };
 
 Emails.preProcess = function (email, cache) {
