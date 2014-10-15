@@ -23,10 +23,14 @@ Emails.initialize = function (config) {
 	// override defaults with specified config
 	_.extend(Emails.config, config);
 
-	console.log(Emails._collection);
-
 	// initialize emails collection
-	Emails._collection = Emails._collection || new Mongo.Collection(Emails.config.collectionName);
+	if (!Emails._collection) {
+		Emails._collection = new Mongo.Collection(Emails.config.collectionName);
+
+		// this index prevents seperate servers from both forwarding the same message
+		Emails._collection._ensureIndex({"incomingId" : 1}, {sparse: true, unique: true});
+		Emails._collection._ensureIndex({"outgoingId" : 1}, {sparse: true, unique: true});
+	}
 
 	if (Emails._observer) Emails._observer.stop();
 
@@ -118,16 +122,20 @@ Emails.deliver = function (email) {
 			return null;
 		}
 	}
+	
+	var updates = {
+		sent: true
+		, sentAt: new Date()
+	};
 
 	// XXX use _.pick to whitelist fields to pass to email.send
-	Emails.provider.send(email);
+	Emails.provider.send(email, updates);
 
 	if (email._id) {
 		if (Emails.config.persist) {
-			Emails._collection.update(email._id, {$set:{
-				sent: true
-				, sentAt: new Date()
-			}});
+			Emails._collection.update(email._id, {
+				$set: updates
+			});
 		} else {
 			Emails._collection.remove(email._id);
 		}
@@ -154,22 +162,24 @@ Emails.receive = function (email) {
 	Emails.send(email);
 };
 
-Emails.lastReceived = function () {
-	return Emails._collection && Emails._collection.findOne({
-		incomingId: {
-			$exists: true
-		}
-	}, {
-		sort: {
-			receivedAt: -1
-		}
-	});
-};
+// unused code
 
-Emails.lastReceivedDate = function () {
-	var email = Emails.lastReceived();
-	return email && email.receivedAt;
-}
+	// Emails.lastReceived = function () {
+	// 	return Emails._collection && Emails._collection.findOne({
+	// 		incomingId: {
+	// 			$exists: true
+	// 		}
+	// 	}, {
+	// 		sort: {
+	// 			receivedAt: -1
+	// 		}
+	// 	});
+	// };
+
+	// Emails.lastReceivedDate = function () {
+	// 	var email = Emails.lastReceived();
+	// 	return email && email.receivedAt;
+	// };
 
 // Preprocessor helpers
 // should be in the format function (arg, email)
@@ -182,7 +192,6 @@ Emails.getUser = function (emailAddress, email, cache) {
 	if (emailAddress.indexOf('@' + Emails.config.domain) != -1) {
 		var username = emailAddress.slice(0, emailAddress.indexOf('@'));
 		var userId = _.last(username.split('_'));
-		console.log('id', userId);
 		query = {
 			$or: [
 				query

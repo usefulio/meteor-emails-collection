@@ -1,17 +1,21 @@
 if (Meteor.isServer) {
-	var emails = [];
-	var originalConfig = _.clone(Emails.config);
-	var reset = function (config) {
-		emails.reset();
-		if (Emails._collection) Emails._collection.remove({});
-		Emails.initialize(config);
+
+	var emails = []
+		, originalConfig = _.clone(Emails.config);
+
+	emails.send = function (mail) {
+		emails.push(mail);
 	};
-	Emails.provider = emails;
-	emails.send = emails.push;
-	emails.reset = function () {
+	emails.reset = function (config) {
 		emails.length = 0;
+		if (Emails._collection) Emails._collection.remove({});
+		Emails.initialize(_.extend({}, originalConfig, config));
 	};
+
+	Emails.provider = emails;
+
 	Meteor.users.remove({});
+	
 	var joeBlow = Meteor.users.insert({
 		profile: {
 			name: 'joe blow'
@@ -50,7 +54,7 @@ if (Meteor.isServer) {
 
 	Tinytest.add('Emails - helpers - getUser returns user record', function (test) {
 		// reset the Emails collection
-		reset({
+		emails.reset({
 			queue: false
 			, persist: false
 			, autoprocess: false
@@ -65,7 +69,7 @@ if (Meteor.isServer) {
 
 	Tinytest.add('Emails - helpers - getUser returns undefined', function (test) {
 		// reset the Emails collection
-		reset({
+		emails.reset({
 			queue: false
 			, persist: false
 			, autoprocess: false
@@ -80,7 +84,7 @@ if (Meteor.isServer) {
 		emails.reset();
 
 		// reset the Emails collection
-		reset({
+		emails.reset({
 			queue: false
 			, persist: false
 			, autoprocess: false
@@ -105,7 +109,7 @@ if (Meteor.isServer) {
 
 	Tinytest.add('Emails - processor - cover address', function (test) {
 		// reset the Emails collection
-		reset({
+		emails.reset({
 			queue: false
 			, persist: false
 			, autoprocess: false
@@ -129,7 +133,7 @@ if (Meteor.isServer) {
 
 	Tinytest.add('Emails - processor - reply', function (test) {
 		// reset the Emails collection
-		reset({
+		emails.reset({
 			queue: false
 			, persist: false
 			, autoprocess: false
@@ -157,7 +161,7 @@ if (Meteor.isServer) {
 
 	Tinytest.add('Emails - processor - admin reply', function (test) {
 		// reset the Emails collection
-		reset({
+		emails.reset({
 			queue: false
 			, persist: false
 			, autoprocess: false
@@ -185,7 +189,7 @@ if (Meteor.isServer) {
 
 	Tinytest.addAsync('Emails - queue - inserts', function (test, next) {
 		// reset the Emails collection
-		reset({
+		emails.reset({
 			queue: true
 			, persist: false
 			, autoprocess: false
@@ -215,12 +219,12 @@ if (Meteor.isServer) {
 		Meteor.setTimeout(function () {
 			test.equal(emails.length, 0);
 			next();
-		});
+		}, 100);
 	});
 
 	Tinytest.addAsync('Emails - queue - autoprocesses', function (test, next) {
 		// reset the Emails collection
-		reset({
+		emails.reset({
 			queue: true
 			, persist: true
 			, autoprocess: true
@@ -254,14 +258,14 @@ if (Meteor.isServer) {
 
 			next();
 
-		}, 10);
+		}, 100);
 		
 
 	});
 
 	Tinytest.addAsync('Emails - queue - dont persist', function (test, next) {
 		// reset the Emails collection
-		reset({
+		emails.reset({
 			queue: true
 			, persist: false
 			, autoprocess: true
@@ -294,14 +298,14 @@ if (Meteor.isServer) {
 
 			next();
 
-		}, 10);
+		}, 100);
 		
 
 	});
 
 	Tinytest.addAsync('Emails - queue - processes only once', function (test, next) {
 		// reset the Emails collection
-		reset({
+		emails.reset({
 			queue: true
 			, persist: true
 			, autoprocess: true
@@ -340,13 +344,13 @@ if (Meteor.isServer) {
 
 			next();
 
-		}, 10);
+		}, 100);
 	});
 
 	Tinytest.add('Emails - processor - uses templates', function (test) {
 
 		// reset the Emails collection
-		reset({
+		emails.reset({
 			queue: false
 			, persist: false
 			, autoprocess: false
@@ -375,7 +379,7 @@ if (Meteor.isServer) {
 	Tinytest.add('Emails - processor - templates use helpers', function (test) {
 
 		// reset the Emails collection
-		reset({
+		emails.reset({
 			queue: false
 			, persist: false
 			, autoprocess: false
