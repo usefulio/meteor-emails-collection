@@ -23,8 +23,10 @@ Emails.initialize = function (config) {
 	// override defaults with specified config
 	_.extend(Emails.config, config);
 
+	console.log(Emails._collection);
+
 	// initialize emails collection
-	Emails._collection = Emails._collection || new Meteor.Collection(Emails.config.collectionName);
+	Emails._collection = Emails._collection || new Mongo.Collection(Emails.config.collectionName);
 
 	if (Emails._observer) Emails._observer.stop();
 
@@ -85,6 +87,8 @@ Emails.process = function (email) {
 	// allow developer to specify any final transformations
 	Emails.preProcess(email, cache);
 
+	email.createdAt = new Date();
+
 	return email;
 };
 
@@ -116,11 +120,14 @@ Emails.deliver = function (email) {
 	}
 
 	// XXX use _.pick to whitelist fields to pass to email.send
-	Email.send(email);
+	Emails.provider.send(email);
 
 	if (email._id) {
 		if (Emails.config.persist) {
-			Emails._collection.update(email._id, {$set:{sent: true}});
+			Emails._collection.update(email._id, {$set:{
+				sent: true
+				, sentAt: new Date()
+			}});
 		} else {
 			Emails._collection.remove(email._id);
 		}
@@ -128,6 +135,41 @@ Emails.deliver = function (email) {
 
 	return email._id;
 };
+
+Emails.receive = function (email) {
+	if (!email.incomingId) {
+		throw new Error('Receiving emails must have an incomingId');
+	}
+	if ((Emails.config.persist || Emails.config.queue) &&
+		Emails._collection &&
+		Emails._collection.findOne({
+			incomingId: email.incomingId
+		})) {
+		throw new Error('Email has already been processed');
+	}
+	email = _.extend({
+		original: email
+		, receivedAt: new Date()
+	}, email);
+	Emails.send(email);
+};
+
+Emails.lastReceived = function () {
+	return Emails._collection && Emails._collection.findOne({
+		incomingId: {
+			$exists: true
+		}
+	}, {
+		sort: {
+			receivedAt: -1
+		}
+	});
+};
+
+Emails.lastReceivedDate = function () {
+	var email = Emails.lastReceived();
+	return email && email.receivedAt;
+}
 
 // Preprocessor helpers
 // should be in the format function (arg, email)
@@ -140,6 +182,7 @@ Emails.getUser = function (emailAddress, email, cache) {
 	if (emailAddress.indexOf('@' + Emails.config.domain) != -1) {
 		var username = emailAddress.slice(0, emailAddress.indexOf('@'));
 		var userId = _.last(username.split('_'));
+		console.log('id', userId);
 		query = {
 			$or: [
 				query
@@ -172,10 +215,10 @@ Emails.getPrettyAddress = function (address, name, email, cache) {
 Emails.prettifyAddresses = function (email, cache) {
 	if (Emails.config.defaultFromAddress && email.replyTo) {
 		email.from = Emails.config.defaultFromAddress;
-	} else if (cache.fromUser) {
+	} else if (cache.fromUser && cache.fromUser.profile && cache.fromUser.profile.name) {
 		email.from = Emails.getPrettyAddress(email.from, cache.fromUser.profile.name);
 	}
-	if (cache.toUser) {
+	if (cache.toUser && cache.toUser.profile && cache.toUser.profile.name) {
 		email.to = Emails.getPrettyAddress(email.to, cache.toUser.profile.name);
 	}
 };

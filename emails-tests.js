@@ -6,9 +6,8 @@ if (Meteor.isServer) {
 		if (Emails._collection) Emails._collection.remove({});
 		Emails.initialize(config);
 	};
-	Email.send = function (email) {
-		emails.push(email);
-	};
+	Emails.provider = emails;
+	emails.send = emails.push;
 	emails.reset = function () {
 		emails.length = 0;
 	};
