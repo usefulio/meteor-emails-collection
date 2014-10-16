@@ -337,7 +337,6 @@ Emails.getHtml = function (email, cache) {
 		} else {
 			return Blaze.toHTMLWithData(template, data);
 		}
-		
 	} else {
 		return (email.text || '').split('\n').join('<br>\n');
 	}
