@@ -15,7 +15,8 @@ if (Meteor.isServer) {
 		emails.length = 0;
 		rejections.length = 0;
 		if (Emails._collection) Emails._collection.remove({});
-		Emails.initialize(_.extend({}, originalConfig, config));
+		Emails.config = _.extend({}, originalConfig, config);
+		Emails.initialize(config);
 	};
 
 
@@ -237,6 +238,8 @@ if (Meteor.isServer) {
 			, defaultFromAddress: 'notifications@example.com'
 		});
 
+		console.log(Emails.config);
+
 		Emails.send({
 			from: 'sambond@sambond.com'
 			, to: 'user_' + joeBlow + '@example.com'
@@ -246,22 +249,24 @@ if (Meteor.isServer) {
 		});
 
 		Meteor.setTimeout(function () {
+			try {
+				var queuedEmails = Emails._collection.find().fetch();
 
-			var queuedEmails = Emails._collection.find().fetch();
+				test.equal(queuedEmails.length, 1);
+				test.equal(queuedEmails[0].sent, true);
 
-			test.equal(queuedEmails.length, 1);
-			test.equal(queuedEmails[0].sent, true);
+				test.equal(emails.length, 1);
 
-			test.equal(emails.length, 1);
-			test.equal(emails[0].from, 'notifications@example.com');
-			test.equal(emails[0].replyTo, 'user_' + samBond + '@example.com');
-			test.equal(emails[0].to, '"joe blow" <joeblow@joeblow.com>');
-			test.equal(emails[0].threadId, [samBond, joeBlow].sort().join("_"));
-			test.equal(emails[0].subject, 'Re: hi there');
-			test.equal(emails[0].text, 'hi there');
-			test.equal(emails[0].html, '<p>hi there</p>');
-
-			next();
+				test.equal(emails[0].from, 'notifications@example.com');
+				test.equal(emails[0].replyTo, 'user_' + samBond + '@example.com');
+				test.equal(emails[0].to, '"joe blow" <joeblow@joeblow.com>');
+				test.equal(emails[0].threadId, [samBond, joeBlow].sort().join("_"));
+				test.equal(emails[0].subject, 'Re: hi there');
+				test.equal(emails[0].text, 'hi there');
+				test.equal(emails[0].html, '<p>hi there</p>');
+			} finally {
+				next();
+			}
 
 		}, 100);
 		
@@ -287,21 +292,22 @@ if (Meteor.isServer) {
 		});
 
 		Meteor.setTimeout(function () {
+			try {
+				var queuedEmails = Emails._collection.find().fetch();
 
-			var queuedEmails = Emails._collection.find().fetch();
+				test.equal(queuedEmails.length, 0);
 
-			test.equal(queuedEmails.length, 0);
-
-			test.equal(emails.length, 1);
-			test.equal(emails[0].from, 'notifications@example.com');
-			test.equal(emails[0].replyTo, 'user_' + samBond + '@example.com');
-			test.equal(emails[0].to, '"joe blow" <joeblow@joeblow.com>');
-			test.equal(emails[0].threadId, [samBond, joeBlow].sort().join("_"));
-			test.equal(emails[0].subject, 'Re: hi there');
-			test.equal(emails[0].text, 'hi there');
-			test.equal(emails[0].html, '<p>hi there</p>');
-
-			next();
+				test.equal(emails.length, 1);
+				test.equal(emails[0].from, 'notifications@example.com');
+				test.equal(emails[0].replyTo, 'user_' + samBond + '@example.com');
+				test.equal(emails[0].to, '"joe blow" <joeblow@joeblow.com>');
+				test.equal(emails[0].threadId, [samBond, joeBlow].sort().join("_"));
+				test.equal(emails[0].subject, 'Re: hi there');
+				test.equal(emails[0].text, 'hi there');
+				test.equal(emails[0].html, '<p>hi there</p>');
+			} finally {
+				next();
+			}
 
 		}, 10);
 		
@@ -332,27 +338,28 @@ if (Meteor.isServer) {
 		Meteor.setTimeout(function () {Emails.deliver(email);}, 0);
 
 		Meteor.setTimeout(function () {
+			try {
+				var queuedEmails = Emails._collection.find().fetch();
 
-			var queuedEmails = Emails._collection.find().fetch();
+				test.equal(queuedEmails.length, 1);
+				test.equal(queuedEmails[0].sent, true);
 
-			test.equal(queuedEmails.length, 1);
-			test.equal(queuedEmails[0].sent, true);
-
-			test.equal(emails.length, 1);
-			test.equal(emails[0].from, 'notifications@example.com');
-			test.equal(emails[0].replyTo, 'user_' + samBond + '@example.com');
-			test.equal(emails[0].to, '"joe blow" <joeblow@joeblow.com>');
-			test.equal(emails[0].threadId, [samBond, joeBlow].sort().join("_"));
-			test.equal(emails[0].subject, 'Re: hi there');
-			test.equal(emails[0].text, 'hi there');
-			test.equal(emails[0].html, '<p>hi there</p>');
-
-			next();
+				test.equal(emails.length, 1);
+				test.equal(emails[0].from, 'notifications@example.com');
+				test.equal(emails[0].replyTo, 'user_' + samBond + '@example.com');
+				test.equal(emails[0].to, '"joe blow" <joeblow@joeblow.com>');
+				test.equal(emails[0].threadId, [samBond, joeBlow].sort().join("_"));
+				test.equal(emails[0].subject, 'Re: hi there');
+				test.equal(emails[0].text, 'hi there');
+				test.equal(emails[0].html, '<p>hi there</p>');
+			} finally {
+				next();
+			}
 
 		}, 10);
 	});
 
-	Tinytest.add('Emails - processor - uses templates', function (test) {
+	Tinytest.add('Emails - templates - uses templates', function (test) {
 
 		// reset the Emails collection
 		emails.reset({
@@ -381,7 +388,127 @@ if (Meteor.isServer) {
 		test.equal(emails[0].html, '<p>hi there</p>');
 	});
 
-	Tinytest.add('Emails - processor - templates use helpers', function (test) {
+	Tinytest.add('Emails - templates - uses default template', function (test) {
+
+		// reset the Emails collection
+		emails.reset({
+			queue: false
+			, persist: false
+			, autoprocess: false
+			, domain: 'example.com'
+			, defaultFromAddress: null
+			, defaultTemplate: 'simple'
+		});
+
+		Emails.send({
+			fromId: joeBlow
+			, toId: samBond
+			, message: 'hi there'
+			, subject: 'hi there'
+		});
+		// console.log(Template);
+		test.equal(emails.length, 1);
+		test.equal(emails[0].from, '"joe blow" <user_' + joeBlow + '@example.com>');
+		test.equal(emails[0].to, '"sam bond" <sambond@sambond.com>');
+		test.equal(emails[0].threadId, [samBond, joeBlow].sort().join("_"));
+		test.equal(emails[0].subject, 'hi there');
+		// XXX
+		// test.equal(emails[0].text, 'hi there');
+		test.equal(emails[0].html, '<p>hi there</p>');
+	});
+
+	Tinytest.add('Emails - templates - does not use default template', function (test) {
+
+		// reset the Emails collection
+		emails.reset({
+			queue: false
+			, persist: false
+			, autoprocess: false
+			, domain: 'example.com'
+			, defaultFromAddress: null
+			, defaultTemplate: 'withHelpers'
+		});
+
+		Emails.send({
+			fromId: joeBlow
+			, toId: samBond
+			, message: 'hi there'
+			, subject: 'hi there'
+			, template: 'simple'
+		});
+		// console.log(Template);
+		test.equal(emails.length, 1);
+		test.equal(emails[0].from, '"joe blow" <user_' + joeBlow + '@example.com>');
+		test.equal(emails[0].to, '"sam bond" <sambond@sambond.com>');
+		test.equal(emails[0].threadId, [samBond, joeBlow].sort().join("_"));
+		test.equal(emails[0].subject, 'hi there');
+		// XXX
+		// test.equal(emails[0].text, 'hi there');
+		test.equal(emails[0].html, '<p>hi there</p>');
+	});
+
+	Tinytest.add('Emails - templates - uses layout template', function (test) {
+
+		// reset the Emails collection
+		emails.reset({
+			queue: false
+			, persist: false
+			, autoprocess: false
+			, domain: 'example.com'
+			, defaultFromAddress: null
+			, layoutTemplate: 'layout'
+		});
+
+		Emails.send({
+			fromId: joeBlow
+			, toId: samBond
+			, message: 'hi there'
+			, subject: 'hi there'
+			, template: 'simple'
+		});
+		// console.log(Template);
+		test.equal(emails.length, 1);
+		test.equal(emails[0].from, '"joe blow" <user_' + joeBlow + '@example.com>');
+		test.equal(emails[0].to, '"sam bond" <sambond@sambond.com>');
+		test.equal(emails[0].threadId, [samBond, joeBlow].sort().join("_"));
+		test.equal(emails[0].subject, 'hi there');
+		// XXX
+		// test.equal(emails[0].text, 'hi there');
+		test.equal(emails[0].html, '<div><p>hi there</p></div>');
+	});
+
+	Tinytest.add('Emails - templates - ignores layout template', function (test) {
+
+		// reset the Emails collection
+		emails.reset({
+			queue: false
+			, persist: false
+			, autoprocess: false
+			, domain: 'example.com'
+			, defaultFromAddress: null
+			, layoutTemplate: 'layout'
+		});
+
+		Emails.send({
+			fromId: joeBlow
+			, toId: samBond
+			, message: 'hi there'
+			, subject: 'hi there'
+			, template: 'simple'
+			, layoutTemplate: null
+		});
+		// console.log(Template);
+		test.equal(emails.length, 1);
+		test.equal(emails[0].from, '"joe blow" <user_' + joeBlow + '@example.com>');
+		test.equal(emails[0].to, '"sam bond" <sambond@sambond.com>');
+		test.equal(emails[0].threadId, [samBond, joeBlow].sort().join("_"));
+		test.equal(emails[0].subject, 'hi there');
+		// XXX
+		// test.equal(emails[0].text, 'hi there');
+		test.equal(emails[0].html, '<p>hi there</p>');
+	});
+
+	Tinytest.add('Emails - templates - templates use helpers', function (test) {
 
 		// reset the Emails collection
 		emails.reset({

@@ -28,6 +28,7 @@ Package.onTest(function(api) {
   api.use('email');
 
   api.addFiles('test_templates/simple.spacebars', 'server');
+  api.addFiles('test_templates/layout.spacebars', 'server');
   api.addFiles('test_templates/withHelpers.spacebars', 'server');
   api.addFiles('test_templates/withHelpers.js', 'server');
   api.addFiles('emails-tests.js');

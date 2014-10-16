@@ -96,6 +96,14 @@ Emails.process = function (email) {
 	if (!email.to) Emails.reject(email, 'missing to address');
 	if (!email.replyTo) delete email.replyTo;
 
+	if (!email.layoutTemplate && !_.isNull(email.layoutTemplate)) {
+		email.layoutTemplate = Emails.config.layoutTemplate;
+	}
+
+	if (!email.template) {
+		email.template = Emails.config.defaultTemplate;
+	}
+
 	// populate threadId and message body
 	if (!email.threadId) email.threadId = Emails.getThreadId(email, cache);
 	if (!email.text) email.text = Emails.getText(email, cache);
@@ -242,7 +250,7 @@ Emails.getToAddress = function (userId, email, cache) {
 };
 
 Emails.getPrettyAddress = function (address, name, email, cache) {
-	if (name) {
+	if (_.isString(name)) {
 		return '"' + name.replace(/[^a-z0-9!#$%&'*+\-\/=?\^_`{|}~ ]/ig, "") + '" <' + address + '>';
 	} else {
 		return address;
@@ -267,7 +275,7 @@ Emails.prettifyAddresses = function (email, cache) {
 // cache is an object which passes/returns metadata we don't need to
 //       store on the email record, for example {fromUser: Users.findOne(fromId)}
 
-// getMetadata and preProcess should be app defined and will always be run
+// getMetadata and preProcess should be app defined and will always be run,
 // each of the other functions will be run only if the corrosponding property is missing
 
 Emails.getMetadata = function (email, cache) {
@@ -315,8 +323,21 @@ Emails.getText = function (email, cache) {
 
 Emails.getHtml = function (email, cache) {
 	// sets the html email copy
-	if (email.template && Template[email.template]) {
-		return Blaze.toHTMLWithData(Template[email.template], _.extend({}, email, cache));
+	var template = email.template && Template[email.template];
+	if (template) {
+		var data  = _.extend({}, email, cache);
+		var layoutTemplate = email.layoutTemplate && Template[email.layoutTemplate];
+		if (layoutTemplate) {
+			layoutTemplate.helpers({
+				yield: function () {
+					return template;
+				}
+			});
+			return Blaze.toHTMLWithData(layoutTemplate, data);
+		} else {
+			return Blaze.toHTMLWithData(template, data);
+		}
+		
 	} else {
 		return (email.text || '').split('\n').join('<br>\n');
 	}
