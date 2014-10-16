@@ -1,18 +1,23 @@
 if (Meteor.isServer) {
 
 	var emails = []
+		, rejections = []
 		, originalConfig = _.clone(Emails.config);
 
 	emails.send = function (mail) {
 		emails.push(mail);
 	};
+	emails.reject = function (email) {
+		rejections.push(email);
+	};
 	emails.reset = function (config) {
+		Emails.provider = emails;
 		emails.length = 0;
+		rejections.length = 0;
 		if (Emails._collection) Emails._collection.remove({});
 		Emails.initialize(_.extend({}, originalConfig, config));
 	};
 
-	Emails.provider = emails;
 
 	Meteor.users.remove({});
 	
@@ -298,7 +303,7 @@ if (Meteor.isServer) {
 
 			next();
 
-		}, 100);
+		}, 10);
 		
 
 	});
@@ -344,7 +349,7 @@ if (Meteor.isServer) {
 
 			next();
 
-		}, 100);
+		}, 10);
 	});
 
 	Tinytest.add('Emails - processor - uses templates', function (test) {
@@ -404,5 +409,117 @@ if (Meteor.isServer) {
 		// XXX
 		// test.equal(emails[0].text, 'hi there');
 		test.equal(emails[0].html, '<p>sum: 2</p>');
+	});
+
+	Tinytest.add('Emails - processor - rejects when missing to/toId', function (test) {
+		emails.reset({
+			queue: false
+			, persist: false
+			, autoprocess: false
+			, domain: 'example.com'
+		});
+
+		test.throws(function () {
+			Emails.send({
+				fromId: joeBlow
+				, toId: null
+				, text: 'hi there'
+				, subject: 'hi there'
+			});			
+		});
+
+		test.equal(Emails._collection.find().count(), 0);
+		test.equal(emails.length, 0);
+
+		test.equal(rejections.length, 1);
+		test.equal(rejections[0].fromId, joeBlow);
+		test.equal(rejections[0].toId, null);
+		test.equal(rejections[0].rejectionMessage, 'missing recipient');
+		test.equal(rejections[0].subject, 'hi there');
+		test.equal(rejections[0].text, 'hi there');
+	});
+
+	Tinytest.add('Emails - processor - rejects when missing from/fromId', function (test) {
+		emails.reset({
+			queue: false
+			, persist: false
+			, autoprocess: false
+			, domain: 'example.com'
+		});
+
+		test.throws(function () {
+			Emails.send({
+				fromId: null
+				, toId: joeBlow
+				, text: 'hi there'
+				, subject: 'hi there'
+			});			
+		});
+
+		test.equal(Emails._collection.find().count(), 0);
+		test.equal(emails.length, 0);
+		
+		test.equal(rejections.length, 1);
+		test.equal(rejections[0].fromId, null);
+		test.equal(rejections[0].toId, joeBlow);
+		test.equal(rejections[0].rejectionMessage, 'missing sender');
+		test.equal(rejections[0].subject, 'hi there');
+		test.equal(rejections[0].text, 'hi there');
+	});
+
+	Tinytest.add('Emails - processor - rejects when missing subject', function (test) {
+		emails.reset({
+			queue: false
+			, persist: false
+			, autoprocess: false
+			, domain: 'example.com'
+		});
+
+		test.throws(function () {
+			Emails.send({
+				fromId: samBond
+				, toId: joeBlow
+				, text: 'hi there'
+				, subject: null
+			});			
+		});
+
+		test.equal(Emails._collection.find().count(), 0);
+		test.equal(emails.length, 0);
+		
+		test.equal(rejections.length, 1);
+		test.equal(rejections[0].fromId, samBond);
+		test.equal(rejections[0].toId, joeBlow);
+		test.equal(rejections[0].rejectionMessage, 'missing message subject');
+		test.equal(rejections[0].subject, null);
+		test.equal(rejections[0].text, 'hi there');
+	});
+
+	Tinytest.add('Emails - processor - rejects when missing body', function (test) {
+		emails.reset({
+			queue: false
+			, persist: false
+			, autoprocess: false
+			, domain: 'example.com'
+		});
+
+		test.throws(function () {
+			Emails.send({
+				fromId: samBond
+				, toId: joeBlow
+				, text: null
+				, subject: 'hi there'
+			});			
+		});
+
+		test.equal(Emails._collection.find().count(), 0);
+		test.equal(emails.length, 0);
+		
+		test.equal(rejections.length, 1);
+		test.equal(rejections[0].fromId, samBond);
+		test.equal(rejections[0].toId, joeBlow);
+		test.equal(rejections[0].rejectionMessage, 'missing message body');
+		test.equal(rejections[0].subject, 'hi there');
+		test.equal(rejections[0].text, null);
 	});
 }

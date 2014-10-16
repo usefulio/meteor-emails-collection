@@ -52,14 +52,20 @@ Emails.initialize = function (config) {
 
 Emails.send = function (email) {
 	Emails.initialize();
-	// preprocesses a message and then either queues or immediately sends it
-	// depending on the queue config option.
-	email = Emails.process(email);
 
-	if (Emails.config.queue) {
-		return Emails.enqueue(email);
-	} else {
-		return Emails.deliver(email);
+	try {
+		// preprocesses a message and then either queues or immediately sends it
+		// depending on the queue config option.
+		email = Emails.process(email);
+
+		if (Emails.config.queue) {
+			return Emails.enqueue(email);
+		} else {
+			return Emails.deliver(email);
+		}
+	} catch (e) {
+		if (e instanceof Meteor.Error) throw e;
+		else Emails.reject(email, e.message);
 	}
 };
 
@@ -78,15 +84,28 @@ Emails.process = function (email) {
 	if (!email.fromId) email.fromId = Emails.getFromId(email, cache);
 	if (!email.toId) email.toId = Emails.getToId(email, cache);
 
+	if (!email.fromId) Emails.reject(email, 'missing sender');
+	if (!email.toId) Emails.reject(email, 'missing recipient');
+
 	// populate to and from email addresses
 	email.from = Emails.getFromAddress(email.fromId, email, cache);
 	email.to = Emails.getToAddress(email.toId, email, cache);
 	email.replyTo = Emails.getReplyTo(email.fromId, email, cache);
 
+	if (!email.from) Emails.reject(email, 'missing from address');
+	if (!email.to) Emails.reject(email, 'missing to address');
+	if (!email.replyTo) delete email.replyTo;
+
 	// populate threadId and message body
 	if (!email.threadId) email.threadId = Emails.getThreadId(email, cache);
 	if (!email.text) email.text = Emails.getText(email, cache);
 	if (!email.html) email.html = Emails.getHtml(email, cache);
+
+	if (!email.subject) Emails.reject(email, 'missing message subject');
+	if (!email.text && !email.html) Emails.reject(email, 'missing message body');
+
+	if (!email.text) delete email.text;
+	if (!email.html) delete email.html;
 
 	// allow developer to specify any final transformations
 	Emails.preProcess(email, cache);
@@ -99,6 +118,14 @@ Emails.process = function (email) {
 Emails.enqueue = function (email) {
 	// inserts an email into the queue
 	return Emails._collection.insert(email);
+};
+
+Emails.reject = function (email, message) {
+	email.rejectionMessage = message || 'unknown error';
+	if (typeof Emails.provider.reject == 'function') {
+		Emails.provider.reject(email);
+	}
+	throw new Meteor.Error(400, message, email);
 };
 
 Emails.deliver = function (email) {
@@ -185,6 +212,7 @@ Emails.receive = function (email) {
 // should be in the format function (arg, email)
 
 Emails.getUser = function (emailAddress, email, cache) {
+	if (typeof emailAddress != 'string') return;
 	// returns a userId by processing an email address.
 	var query = {
 		"emails.address": emailAddress
@@ -282,7 +310,7 @@ Emails.getThreadId = function(email, cache) {
 
 Emails.getText = function (email, cache) {
 	// sets the plain text email copy
-	return '';
+	return null;
 };
 
 Emails.getHtml = function (email, cache) {
@@ -290,7 +318,7 @@ Emails.getHtml = function (email, cache) {
 	if (email.template && Template[email.template]) {
 		return Blaze.toHTMLWithData(Template[email.template], _.extend({}, email, cache));
 	} else {
-		return email.text.split('\n').join('<br>\n');
+		return (email.text || '').split('\n').join('<br>\n');
 	}
 };
 
