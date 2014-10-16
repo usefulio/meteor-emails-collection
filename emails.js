@@ -155,8 +155,30 @@ Emails.enqueue = function (email) {
 
 Emails.reject = function (email, message) {
 	email.rejectionMessage = message || 'unknown error';
-	if (typeof Emails.provider.reject == 'function') {
+	if (email.incomingId && typeof Emails.provider.reject == 'function') {
 		Emails.provider.reject(email);
+	}
+	if (email._id) {
+		// this email is in the db
+		if (Emails.config.persist) {
+			// we want to keep a record of this email
+			// don't mark it as a draft, it was 'sent'
+			// mark it as 'send failed'
+			Emails._collection.update(email._id, {
+				$set: {
+					sent: false
+					// we want both these fields to be logged so we can back
+					// track what caused the failure.
+					, rejectionMessage: email.rejectionMessage
+					, rejectedEmail: email
+				}
+				, $unset: {
+					draft: true
+				}
+			});
+		} else {
+			Emails._collection.remove(email._id);
+		}
 	}
 	throw new Meteor.Error(400, message, email);
 };
