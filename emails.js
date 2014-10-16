@@ -78,54 +78,77 @@ Emails.process = function (email) {
 	// dont polute the object we were passed.
 	email = _.clone(email);
 
-	Emails.getMetadata(email, cache);
+	// don't process drafts.
+	if (!email.draft) {
 
-	// populate user ids
-	if (!email.fromId) email.fromId = Emails.getFromId(email, cache);
-	if (!email.toId) email.toId = Emails.getToId(email, cache);
+		Emails.getMetadata(email, cache);
 
-	if (!email.fromId) Emails.reject(email, 'missing sender');
-	if (!email.toId) Emails.reject(email, 'missing recipient');
+		// populate user ids
+		if (!email.fromId) email.fromId = Emails.getFromId(email, cache);
+		if (!email.toId) email.toId = Emails.getToId(email, cache);
 
-	// populate to and from email addresses
-	email.from = Emails.getFromAddress(email.fromId, email, cache);
-	email.to = Emails.getToAddress(email.toId, email, cache);
-	email.replyTo = Emails.getReplyTo(email.fromId, email, cache);
+		if (!email.fromId) Emails.reject(email, 'missing sender');
+		if (!email.toId) Emails.reject(email, 'missing recipient');
 
-	if (!email.from) Emails.reject(email, 'missing from address');
-	if (!email.to) Emails.reject(email, 'missing to address');
-	if (!email.replyTo) delete email.replyTo;
+		// populate to and from email addresses
+		email.from = Emails.getFromAddress(email.fromId, email, cache);
+		email.to = Emails.getToAddress(email.toId, email, cache);
+		email.replyTo = Emails.getReplyTo(email.fromId, email, cache);
 
-	if (!email.layoutTemplate && !_.isNull(email.layoutTemplate)) {
-		email.layoutTemplate = Emails.config.layoutTemplate;
+		if (!email.from) Emails.reject(email, 'missing from address');
+		if (!email.to) Emails.reject(email, 'missing to address');
+		if (!email.replyTo) delete email.replyTo;
+
+		if (!email.layoutTemplate && !_.isNull(email.layoutTemplate)) {
+			email.layoutTemplate = Emails.config.layoutTemplate;
+		}
+
+		if (!email.template) {
+			email.template = Emails.config.defaultTemplate;
+		}
+
+		// populate threadId and message body
+		if (!email.threadId) email.threadId = Emails.getThreadId(email, cache);
+		if (!email.text) email.text = Emails.getText(email, cache);
+		if (!email.html) email.html = Emails.getHtml(email, cache);
+
+		if (!email.subject) Emails.reject(email, 'missing message subject');
+		if (!email.text && !email.html) Emails.reject(email, 'missing message body');
+
+		if (!email.text) delete email.text;
+		if (!email.html) delete email.html;
+
+		// allow developer to specify any final transformations
+		Emails.preProcess(email, cache);		
 	}
 
-	if (!email.template) {
-		email.template = Emails.config.defaultTemplate;
-	}
-
-	// populate threadId and message body
-	if (!email.threadId) email.threadId = Emails.getThreadId(email, cache);
-	if (!email.text) email.text = Emails.getText(email, cache);
-	if (!email.html) email.html = Emails.getHtml(email, cache);
-
-	if (!email.subject) Emails.reject(email, 'missing message subject');
-	if (!email.text && !email.html) Emails.reject(email, 'missing message body');
-
-	if (!email.text) delete email.text;
-	if (!email.html) delete email.html;
-
-	// allow developer to specify any final transformations
-	Emails.preProcess(email, cache);
-
-	email.createdAt = new Date();
+	if (!email._id) email.createdAt = new Date();
+	else email.updatedAt = new Date();
 
 	return email;
 };
 
 Emails.enqueue = function (email) {
 	// inserts an email into the queue
-	return Emails._collection.insert(email);
+
+	// handle drafts
+	if (email.draft === false) {
+		if (!email._id) throw new Error('No id passed when sending draft email.');
+
+		// replace the document in it's entirety
+		// we don't preprocess drafts so we don't know if the fields which 
+		// wouldn't be overwritten are valid.
+
+		var modifier = _.clone(email);
+		delete modifier.draft;
+		delete modifier._id;
+		
+		Emails._collection.update(email._id, modifier);
+	} else {
+		return Emails._collection.insert(email);
+	}
+
+	
 };
 
 Emails.reject = function (email, message) {
@@ -138,6 +161,10 @@ Emails.reject = function (email, message) {
 
 Emails.deliver = function (email) {
 	// actually sends an email
+
+	// handle drafts
+	if (email.draft) throw new Error('Email is marked as draft.');
+
 	if (email._id) {
 		var marker = Random.id();
 		Emails._collection.update({

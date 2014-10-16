@@ -238,8 +238,6 @@ if (Meteor.isServer) {
 			, defaultFromAddress: 'notifications@example.com'
 		});
 
-		console.log(Emails.config);
-
 		Emails.send({
 			from: 'sambond@sambond.com'
 			, to: 'user_' + joeBlow + '@example.com'
@@ -269,8 +267,6 @@ if (Meteor.isServer) {
 			}
 
 		}, 100);
-		
-
 	});
 
 	Tinytest.addAsync('Emails - queue - dont persist', function (test, next) {
@@ -648,5 +644,143 @@ if (Meteor.isServer) {
 		test.equal(rejections[0].rejectionMessage, 'missing message body');
 		test.equal(rejections[0].subject, 'hi there');
 		test.equal(rejections[0].text, null);
+	});
+
+	Tinytest.add('Emails - drafts - inserts draft without processing', function (test) {
+		// reset the Emails collection
+		emails.reset({
+			queue: true
+			, persist: false
+			, autoprocess: false
+			, domain: 'example.com'
+			, defaultFromAddress: 'notifications@example.com'
+		});
+		var email = {
+			from: 'sambond@sambond.com'
+			, to: 'user_' + joeBlow + '@example.com'
+			, text: 'hi there'
+			, html: '<p>hi there</p>'
+			, subject: 'Re: hi there'
+			, draft: true
+		};
+
+		Emails.send(email);
+
+		var queuedEmails = Emails._collection.find().fetch();
+
+		test.equal(queuedEmails.length, 1);
+		_.each(email, function (a, i) {
+			test.equal(queuedEmails[0][i], a);
+		});
+
+		test.equal(queuedEmails[0].threadId, undefined);
+		test.equal(queuedEmails[0].fromId, undefined);
+		test.equal(queuedEmails[0].toId, undefined);
+
+		// we need to implement userId first.
+		// test.equal(queuedEmails[0].userId, null);
+	});
+
+	Tinytest.addAsync('Emails - drafts - insertes draft without autoprocessing', function (test, next) {
+		// reset the Emails collection
+		emails.reset({
+			queue: true
+			, persist: true
+			, autoprocess: true
+			, domain: 'example.com'
+			, defaultFromAddress: 'notifications@example.com'
+		});
+
+		Emails.send({
+			from: 'sambond@sambond.com'
+			, to: 'user_' + joeBlow + '@example.com'
+			, text: 'hi there'
+			, html: '<p>hi there</p>'
+			, subject: 'Re: hi there'
+			, draft: true
+		});
+
+		Meteor.setTimeout(function () {
+			try {
+				var queuedEmails = Emails._collection.find().fetch();
+
+				test.equal(queuedEmails.length, 1);
+				test.equal(queuedEmails[0].sent, undefined);
+
+				test.equal(emails.length, 0);
+			} finally {
+				next();
+			}
+		}, 100);
+	});
+
+	Tinytest.add('Emails - drafts - throws on queue=false', function (test) {
+		// reset the Emails collection
+		emails.reset({
+			queue: false
+			, persist: false
+			, autoprocess: false
+			, domain: 'example.com'
+			, defaultFromAddress: 'notifications@example.com'
+		});
+		var email = {
+			from: 'sambond@sambond.com'
+			, to: 'user_' + joeBlow + '@example.com'
+			, text: 'hi there'
+			, html: '<p>hi there</p>'
+			, subject: 'Re: hi there'
+			, draft: true
+		};
+
+		test.throws(function () {
+			Emails.send(email);
+		});
+		
+
+		var queuedEmails = Emails._collection.find().fetch();
+
+		test.equal(queuedEmails.length, 0);
+
+		test.equal(emails.length, 0);
+	});
+
+	Tinytest.add('Emails - drafts - correctly sends finished draft', function (test) {
+		// reset the Emails collection
+		emails.reset({
+			queue: true
+			, persist: true
+			, autoprocess: true
+			, domain: 'example.com'
+			, defaultFromAddress: 'notifications@example.com'
+		});
+		var email = {
+			from: 'sambond@sambond.com'
+			, to: 'user_' + joeBlow + '@example.com'
+			, text: 'hi there'
+			, html: '<p>hi there</p>'
+			, subject: 'Re: hi there'
+			, draft: true
+		};
+
+		var id = Emails.send(email);
+
+		email._id = id;
+		email.draft = false;
+
+		Emails.send(email);
+		
+		var queuedEmails = Emails._collection.find().fetch();
+
+		test.equal(queuedEmails.length, 1);
+		test.equal(queuedEmails[0].from, 'notifications@example.com');
+		test.equal(queuedEmails[0].replyTo, 'user_' + samBond + '@example.com');
+		test.equal(queuedEmails[0].to, '"joe blow" <joeblow@joeblow.com>');
+		test.equal(queuedEmails[0].threadId, [samBond, joeBlow].sort().join("_"));
+		test.equal(queuedEmails[0].subject, 'Re: hi there');
+		test.equal(queuedEmails[0].text, 'hi there');
+		test.equal(queuedEmails[0].html, '<p>hi there</p>');
+
+		// we need to implement userId first.
+		// test.equal(queuedEmails[0].userId, null);
 	});
 }
