@@ -51,11 +51,13 @@ Emails.initialize = function (config) {
 };
 
 Emails.send = function (email) {
+	// preprocesses a message and then either queues or immediately sends it
+	// depending on the queue config option.
+
 	Emails.initialize();
 
 	try {
-		// preprocesses a message and then either queues or immediately sends it
-		// depending on the queue config option.
+
 		email = Emails.process(email);
 
 		if (Emails.config.queue) {
