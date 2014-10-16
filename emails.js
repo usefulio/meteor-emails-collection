@@ -212,13 +212,16 @@ Emails.receive = function (email) {
 	if (!email.incomingId) {
 		throw new Error('Receiving emails must have an incomingId');
 	}
-	if ((Emails.config.persist || Emails.config.queue) &&
-		Emails._collection &&
-		Emails._collection.findOne({
-			incomingId: email.incomingId
-		})) {
-		throw new Error('Email has already been processed');
-	}
+	// this check is no longer necessary, we have added this check as a unique
+	// index on the db, and also expect Emails.provider to implement this check
+	// as well:
+		// if ((Emails.config.persist || Emails.config.queue) &&
+		// 	Emails._collection &&
+		// 	Emails._collection.findOne({
+		// 		incomingId: email.incomingId
+		// 	})) {
+		// 	throw new Error('Email has already been processed');
+		// }
 	email = _.extend({
 		original: email
 		, receivedAt: new Date()
