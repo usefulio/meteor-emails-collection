@@ -1,6 +1,6 @@
 Package.describe({
   summary: "Email queing and reply processing for meteor.",
-  version: "0.3.0",
+  version: "0.3.1",
   git: "git@github.com:cwohlman/meteor-emails-collection.git",
   name: "cwohlman:emails"
 });
@@ -14,10 +14,11 @@ Package.onUse(function(api) {
   api.use('underscore');
   api.use('accounts-base');
   api.use('mongo');
-  
+
   api.export('Emails');
 
-  api.addFiles('emails.js');
+  api.addFiles('emails.js', ['server']);
+  api.addFiles('emailsDefaultProvider.js', ['server']);
 });
 
 Package.onTest(function(api) {
