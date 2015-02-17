@@ -1,7 +1,7 @@
 Package.describe({
   summary: "Email queing and reply processing for meteor.",
   version: "0.3.3",
-  git: "git@github.com:cwohlman/meteor-emails-collection.git",
+  git: "https://github.com/usefulio/meteor-emails-collection.git",
   name: "cwohlman:emails"
 });
 
