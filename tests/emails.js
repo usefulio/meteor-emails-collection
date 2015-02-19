@@ -112,3 +112,38 @@ Tinytest.add('Emails - setDefaultAction - should set the default route to send t
 
   delete Emails.routes[routeName];
 });
+
+Tinytest.add('Emails - setProvider - should accept route name', function (test) {
+  var routeName = "test" + (routeNumber++);
+  Emails.route(routeName, {
+    action: function (email) {
+      email._test_field = routeName;
+      defaultAction(email);
+    }
+  });
+
+  var defaultProvider = Emails.routes.provider;
+  var defaultAction = Emails.routes.default.action;
+
+  Emails.setProvider(routeName);
+
+  try {
+    Emails.send("provider", {
+      to: "customer@example.com"
+      , from: "developer@example.com"
+      , subject: "Email test"
+      , text: "This is a test."
+    });
+
+    var email = _.find(Emails._test_emails, function (a) {
+      return a._test_field == routeName;
+    });
+
+    test.equal(typeof email, "object");
+    test.equal(email.text, "This is a test.");
+  } finally {
+    Emails.routes.provider = defaultProvider;
+  }
+  
+  delete Emails.routes[routeName];
+});
