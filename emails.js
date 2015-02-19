@@ -57,7 +57,11 @@ Emails.extend = function (parent, route, controller) {
 	self.routes[route] = controller;
 };
 
-
+Emails.setDefaultAction = function (route) {
+	Emails.routes["default"].action = function (email) {
+		Emails.routes[route].send(email, this);
+	};
+};
 
 
 
