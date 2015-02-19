@@ -1,6 +1,9 @@
+var routeNumber = 1;
+
 Tinytest.add('Emails - send - should send using the default action', function (test) {
+  var routeName = "test" + (routeNumber++);
   Emails.send({
-    _id: "test 1"
+    _id: routeName
     , to: "customer@example.com"
     , from: "developer@example.com"
     , subject: "Email test"
@@ -8,22 +11,26 @@ Tinytest.add('Emails - send - should send using the default action', function (t
   });
 
   var email = _.find(Emails._test_emails, function (a) {
-    return a._id == "test 1";
+    return a._id == routeName;
   });
 
   test.equal(typeof email, "object");
   test.equal(email.text, "This is a test.");
+
+  delete Emails.routes[routeName];
 });
 
 Tinytest.add('Emails - route - should create named route', function (test) {
-  var routeName = "test 2";
+  var routeName = "test" + (routeNumber++);
   Emails.route(routeName, {});
 
   test.equal(typeof Emails.routes[routeName], "object");
+
+  delete Emails.routes[routeName];
 });
 
 Tinytest.add('Emails - send - should accept a route name', function (test) {
-  var routeName = "test 3";
+  var routeName = "test" + (routeNumber++);
   Emails.route(routeName, {
     beforeSend: function (email) {
       email._test_field = routeName;
@@ -43,10 +50,12 @@ Tinytest.add('Emails - send - should accept a route name', function (test) {
 
   test.equal(typeof email, "object");
   test.equal(email.text, "This is a test.");
+
+  delete Emails.routes[routeName];
 });
 
 Tinytest.add('Emails - extend - should extend an existing route', function (test) {
-  var routeName = "test 4";
+  var routeName = "test" + (routeNumber++);
   Emails.extend("default", routeName, {
     beforeSend: function (email) {
       email._test_field = routeName;
@@ -66,10 +75,12 @@ Tinytest.add('Emails - extend - should extend an existing route', function (test
 
   test.equal(typeof email, "object");
   test.equal(email.text, "This is a test.");
+
+  delete Emails.routes[routeName];
 });
 
 Tinytest.add('Emails - setDefaultAction - should set the default route to send to the specified route', function (test) {
-  var routeName = "test 6";
+  var routeName = "test" + (routeNumber++);
   Emails.route(routeName, {
     action: function (email) {
       email._test_field = routeName;
@@ -98,4 +109,6 @@ Tinytest.add('Emails - setDefaultAction - should set the default route to send t
   } finally {
     Emails.routes.default.action = defaultAction;
   }
+
+  delete Emails.routes[routeName];
 });
