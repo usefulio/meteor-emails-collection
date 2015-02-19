@@ -14,12 +14,14 @@ Package.onUse(function(api) {
   api.use('underscore');
   api.use('accounts-base');
   api.use('mongo');
+  api.use('email');
 
   api.export('Emails');
   api.export('EmailController');
 
   api.addFiles('controller.js');
   api.addFiles('emails.js');
+  api.addFiles('defaultProvider.js');
 });
 
 Package.onTest(function(api) {
@@ -33,4 +35,5 @@ Package.onTest(function(api) {
   
   api.addFiles("tests/controller.js");
   api.addFiles("tests/emails.js");
+  api.addFiles("tests/defaultProvider.js");
 });
