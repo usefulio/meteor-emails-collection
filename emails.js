@@ -4,7 +4,7 @@ Emails = {};
 Emails.send = function (route, email, context) {
 	var self = this;
 
-	if ((typeof route) === "object" && !email) {
+	if ((typeof route) === "object" && !context) {
 		email = route;
 		context = email;
 		route = null;
@@ -26,7 +26,21 @@ Emails.routes = {
 	"default": new EmailController()
 };
 
+Emails.route = function (route, controller) {
+	var self = this;
 
+	if (typeof route !== "string")
+		throw new Error("route should be a string, not " + typeof route);
+	if (typeof controller !== "object")
+		throw new Error("controller should be an object, not " + typeof controller);
+	if (self.routes[route])
+		throw new Error("route named " + route + " already defined");
+
+	if (! (controller instanceof EmailController))
+		controller = self.routes["default"].extend(controller);
+
+	self.routes[route] = controller;
+};
 
 
 
