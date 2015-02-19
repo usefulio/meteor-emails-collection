@@ -30,6 +30,7 @@ EmailController._isHook = function (key) {
 
 EmailController._hooks = [
   "beforeSend"
+  , "afterSend"
 ];
 
 EmailController.prototype.addHook = function (name, fn) {
@@ -96,4 +97,5 @@ EmailController.prototype.send = function (email, context) {
 
   self.callHook("beforeSend", context);
   self.action.call(context, email);
+  self.callHook("afterSend", context);
 };

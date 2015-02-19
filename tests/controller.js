@@ -38,6 +38,50 @@ Tinytest.add('Emails - controllers - before send', function (test) {
   test.equal(email.sent, true);
 });
 
+Tinytest.add('Emails - controllers - afterSend', function (test) {
+  var controller = new EmailController();
+  
+  var email = {};
+  var context = {
+    email: email
+  };
+  controller.addHook("afterSend", function (mail) {
+    email.sent = true;
+    this.sent = true;
+
+    test.equal(email, mail);
+    test.equal(this, context);
+  });
+  test.equal(_.isArray(controller.afterSend), true);
+  test.equal(controller.afterSend.length, 1);
+
+  controller.callHook("afterSend", context);
+  test.equal(context.sent, true);
+  test.equal(email.sent, true);
+});
+
+Tinytest.add('Emails - controllers - hooks run in correct order', function (test) {
+  var controller = new EmailController();
+  var email;
+
+  controller.addHook("beforeSend", function (email) {
+    email.beforeSend = true;
+  });
+  controller.addHook("afterSend", function (email) {
+    test.equal(email.beforeSend, true);
+    test.equal(email.action, true);
+
+    email.afterSend = true;
+  });
+  controller.action = function (mail) {
+    mail.action = true;
+    email = mail;
+  };
+
+  controller.send({});
+  test.equal(email.afterSend, true);
+});
+
 Tinytest.add('Emails - controllers - constructor accepts options', function (test) {
   var controller = new EmailController({
     beforeSend: function (email) {}
