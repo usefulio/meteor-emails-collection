@@ -71,3 +71,29 @@ Tinytest.add('Emails - controllers - extend hooks', function (test) {
   test.equal(controller.name, "name");
   test.equal(controller.other, "other");
 });
+
+Tinytest.add('Emails - controllers - send', function (test) {
+  var sent;
+  var controller = new EmailController({
+    beforeSend: function (email) {
+      email.beforeSend = "beforeSend";
+      this.other = "other";
+    }
+    , name: "name"
+    , action: function (email) {
+      test.equal(email.name, "name");
+      test.equal(email.beforeSend, "beforeSend");
+      test.equal(this.other, "other");
+      test.equal(this.email, email);
+      test.equal(this.controller, controller);
+
+      sent = email;
+    }
+  });
+  test.equal(typeof controller.send, "function");
+
+  controller.send({
+    name: "name"
+  });
+  test.equal(typeof sent, "object");
+});

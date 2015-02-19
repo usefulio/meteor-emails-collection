@@ -64,7 +64,7 @@ EmailController.prototype.callHook = function (name, context) {
 
 EmailController.prototype.extend = function (options) {
   var self = this;
-  var inherited = {}
+  var inherited = {};
 
   // we can't use _.clone here because we don't want to copy the properties
   // from the prototype
@@ -77,4 +77,23 @@ EmailController.prototype.extend = function (options) {
   child._extend(options);
 
   return child;
+};
+
+EmailController.prototype.send = function (email, context) {
+  var self = this;
+
+  if (typeof email !== "object")
+    throw new Error("email should be an object, not " + (typeof email));
+  if (!context)
+    context = {};
+  if (typeof context !== "object")
+    throw new Error("context should be an object, not " + (typeof context));
+
+  if (typeof self.action !== "function")
+    throw new Error("cannot send email, no action defined");
+
+  context.email = email;
+
+  self.callHook("beforeSend", context);
+  self.action.call(context, email);
 };
