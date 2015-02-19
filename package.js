@@ -16,9 +16,9 @@ Package.onUse(function(api) {
   api.use('mongo');
 
   api.export('Emails');
+  api.export('EmailController');
 
-  api.addFiles('emails.js', ['server']);
-  api.addFiles('emailsDefaultProvider.js', ['server']);
+  api.addFiles('controller.js');
 });
 
 Package.onTest(function(api) {
@@ -27,10 +27,6 @@ Package.onTest(function(api) {
   api.use('accounts-base');
   api.use('cwohlman:emails');
   api.use('email');
-
-  api.addFiles('test_templates/simple.spacebars', 'server');
-  api.addFiles('test_templates/layout.spacebars', 'server');
-  api.addFiles('test_templates/withHelpers.spacebars', 'server');
-  api.addFiles('test_templates/withHelpers.js', 'server');
-  api.addFiles('emails-tests.js');
+  
+  api.addFiles("tests/controller.js");
 });

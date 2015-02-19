@@ -8,6 +8,10 @@ API
 
 `Emails.send(email)` - send an email, or queue it for sending. `email` should be an object with to(Id), from(Id), subject and template|text|html.
 
+`Emails.send(routeName, email)` - send an email using the specified route, `route` should be a string - the name of the route to send to, `email` should be an object.
+
+`Emails.define(routeName[, onBeforeSend][, options])` - define a route, named `routeName`, `onBeforeSend` is a function which will be called before sending an email, `options` is an object which will extend the EmailController which sends emails.
+
 Templates
 ----------------------
 Write your templates like you would client side templates and save them as .spacebars files. Then reference them by name when using them for Emails and they are accessible on the Template object. You can define and use template helpers and global template helpers the same way you would for client side templates.
