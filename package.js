@@ -19,9 +19,9 @@ Package.onUse(function(api) {
   api.export('Emails');
   api.export('EmailController');
 
-  api.addFiles('controller.js');
-  api.addFiles('emails.js');
-  api.addFiles('defaultProvider.js');
+  api.addFiles('lib/controller.js');
+  api.addFiles('lib/emails.js');
+  api.addFiles('lib/defaultProvider.js');
 });
 
 Package.onTest(function(api) {
