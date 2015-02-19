@@ -19,6 +19,7 @@ Package.onUse(function(api) {
   api.export('EmailController');
 
   api.addFiles('controller.js');
+  api.addFiles('emails.js');
 });
 
 Package.onTest(function(api) {
@@ -27,6 +28,9 @@ Package.onTest(function(api) {
   api.use('accounts-base');
   api.use('cwohlman:emails');
   api.use('email');
+
+  api.addFiles("tests/mocks.js");
   
   api.addFiles("tests/controller.js");
+  api.addFiles("tests/emails.js");
 });
