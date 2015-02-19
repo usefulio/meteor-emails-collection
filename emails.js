@@ -42,7 +42,20 @@ Emails.route = function (route, controller) {
 	self.routes[route] = controller;
 };
 
+Emails.extend = function (parent, route, controller) {
+	var self = this;
 
+	if (typeof route !== "string")
+		throw new Error("route should be a string, not " + typeof route);
+	if (typeof controller !== "object")
+		throw new Error("controller should be an object, not " + typeof controller);
+	if (self.routes[route])
+		throw new Error("route named " + route + " already defined");
+
+	controller = self.routes[parent].extend(controller);
+
+	self.routes[route] = controller;
+};
 
 
 
