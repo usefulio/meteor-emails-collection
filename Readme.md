@@ -121,13 +121,16 @@ Built In Routes
 - Future Api ------
 - `forward` - This route will accept emails from your mail api and deturmine who to send mail to.
 
-Built In Helpers - TODO
+Built In Helpers
 ----------------------
 The emails package comes with some built in helpers to make it easier to write templates and email processing logic.
 
 `toUser` - returns `Meteor.users.findOne(email.toId)`
 `fromUser` - returns `Meteor.users.findOne(email.fromId)`
-`prettyAddress` - takes a userId and returns a string in the format `First Last <email@example.com>`
+`address` - takes a userId and returns a string in the format `First Last <email@example.com>`
+
+TODO:
+
 `threadId` - returns a 'threadId' which uniquely identifies this conversation.
 
 If you don't need/want these helpers you can override some or all of them by setting the default helpers host, for example:
