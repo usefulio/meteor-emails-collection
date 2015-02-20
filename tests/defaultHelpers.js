@@ -6,6 +6,9 @@ testAndCleanup("Emails - default helpers - fromUser and toUser", function (test)
     test.equal(from && from.profile.name, "joe");
     test.equal(to && to.profile.name, "sam");
 
+    test.equal(this.fromUser, from);
+    test.equal(this.toUser, to);
+
     sent = email;
   };
 
