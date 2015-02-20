@@ -311,3 +311,37 @@ Tinytest.add('Emails - controllers - config', function (test) {
 
   test.equal(email.age, 6);
 });
+
+Tinytest.add('Emails - controllers - get function trys all paths', function (test) {
+  var controller = new EmailController({
+    config: {
+      config: "config"
+      , helper: "config"
+    },
+    helpers: {
+      helper: function () {
+        return "helper";
+      }
+    },
+    action: function () {
+      test.equal(this.get('helper'), 'helper');
+      test.equal(this.get('config'), 'config');
+      test.equal(this.get('context'), 'context');
+      test.equal(this.get('mail'), 'mail');
+    }
+  });
+  var context = {
+    config: "context"
+    , helper: "context"
+    , context: "context"
+  };
+  var email = {
+    config: "email"
+    , helper: "email"
+    , context: "email"
+    , mail: "mail"
+  };
+  controller.send(email, context);
+});
+
+// XXX null should be considered a value
