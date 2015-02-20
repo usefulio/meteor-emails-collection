@@ -25,6 +25,7 @@ Package.onUse(function(api) {
   api.addFiles('lib/controller.js');
   api.addFiles('lib/emails.js');
   api.addFiles('lib/defaultProvider.js');
+  api.addFiles('lib/defaultHelpers.js');
 });
 
 Package.onTest(function(api) {
@@ -33,8 +34,12 @@ Package.onTest(function(api) {
   api.use('accounts-base');
   api.use('cwohlman:emails');
   api.use('email');
+  api.use('autopublish');
   
+  api.addFiles("tests/mocks.js");
+
   api.addFiles("tests/controller.js");
   api.addFiles("tests/emails.js");
   api.addFiles("tests/defaultProvider.js");
+  api.addFiles("tests/defaultHelpers.js");
 });
