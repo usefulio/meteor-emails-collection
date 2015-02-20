@@ -17,16 +17,16 @@ TODO
 
 Api
 ----------------------
-* `Emails.send(email)` - Send an email using the default route and provider, takes an object with the same form as Meteor's `Email.send`.
-* `Emails.send(route, email)` - Send an email using the specified route. A route defines custom hooks which run before and after actually sending the email and optionally a custom action to actually send the email.
-* `Emails.route(route, options)` - Define a route for sending email which inherits from the default route, `route` is the name of the route, `options` is an object with the following properties (all optional):
-    - `beforeSend` - a function, to be called before sending the email.
-    - `afterSend` - a function, to be called after sending the email.
-    - `action` - a function, called instead of the default action.
-* `Emails.route(route, controller)` - Define a route for sending email which does not inherit from the default route, `controller` is an instance of `EmailController`.
-* `Emails.extend(parent, route, options)` - Define a route which inherits from another route. `parent` is the name of the route to inherit from, `route` and `options` are the same as `Emails.route`.
-* `Emails.setDefaultAction(route)` - Sets a route as the default action, `controller.send(email)` will be called for the route with the name `route`.
-* `Emails.setProvider(route)` - Sets `route` as the email provider so that the route's `controller.send` method will be called when sending emails.
+- `Emails.send(email)` - Send an email using the default route and provider, takes an object with the same form as Meteor's `Email.send`.
+- `Emails.send(route, email)` - Send an email using the specified route. A route defines custom hooks which run before and after actually sending the email and optionally a custom action to actually send the email.
+- `Emails.route(route, options)` - Define a route for sending email which inherits from the default route, `route` is the name of the route, `options` is an object with the following properties (all optional):
+    + `beforeSend` - a function, to be called before sending the email.
+    + `afterSend` - a function, to be called after sending the email.
+    + `action` - a function, called instead of the default action.
+- `Emails.route(route, controller)` - Define a route for sending email which does not inherit from the default route, `controller` is an instance of `EmailController`.
+- `Emails.extend(parent, route, options)` - Define a route which inherits from another route. `parent` is the name of the route to inherit from, `route` and `options` are the same as `Emails.route`.
+- `Emails.setDefaultAction(route)` - Sets a route as the default action, `controller.send(email)` will be called for the route with the name `route`.
+- `Emails.setProvider(route)` - Sets `route` as the email provider so that the route's `controller.send` method will be called when sending emails.
 - `Emails.processQueue(route)` - Process emails from the queue using `route`, `route` is optional and defaults to `provider`.
 
 Controllers
