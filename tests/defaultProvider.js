@@ -30,4 +30,17 @@ if (Meteor.isServer) {
                "From us.\r\n" +
                "====== END MAIL #0 ======\n");
   });
+
+  testAndCleanup("Emails - default provider - queues emails for sending", function (test) {
+    Emails.setDefaultAction("queue");
+
+    Emails.send({
+      _test_field: routeName
+    });
+
+    sent = Emails._collection.findOne();
+
+    test.equal(typeof sent, 'object');
+    test.equal(sent._test_field, routeName);
+  });
 }
