@@ -78,9 +78,7 @@ if (Meteor.isServer) {
       _test_field: routeName
     });
 
-    console.log('queued');
     Meteor.setTimeout(function () {
-      console.log('testing');
       try {
         test.equal(typeof sent, 'object');
         test.equal(sent._test_field, routeName);
