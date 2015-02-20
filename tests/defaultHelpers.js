@@ -27,3 +27,20 @@ testAndCleanup("Emails - default helpers - prettyAddress", function (test) {
 
   Emails.send({}); 
 });
+
+testAndCleanup("Emails - default helpers - render", function (test) {
+  Emails.routes.default.action = function (email) {
+    this.message = "test";
+
+    var renderedHtml = this.get("render", email.template);
+
+    test.matches(renderedHtml, /test/);
+
+    sent = email;
+  };
+
+  Emails.send({
+    template: "simple"
+  }); 
+});
+

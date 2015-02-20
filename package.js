@@ -38,6 +38,11 @@ Package.onTest(function(api) {
   
   api.addFiles("tests/mocks.js");
 
+  api.addFiles("test_templates/simple.spacebars");
+  api.addFiles("test_templates/layout.spacebars");
+  api.addFiles("test_templates/withHelpers.spacebars");
+  api.addFiles("test_templates/withHelpers.js");
+
   api.addFiles("tests/controller.js");
   api.addFiles("tests/emails.js");
   api.addFiles("tests/defaultProvider.js");
