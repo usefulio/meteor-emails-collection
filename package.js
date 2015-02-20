@@ -26,6 +26,7 @@ Package.onUse(function(api) {
   api.addFiles('lib/emails.js');
   api.addFiles('lib/defaultProvider.js');
   api.addFiles('lib/defaultHelpers.js');
+  api.addFiles('lib/defaultHooks.js');
 });
 
 Package.onTest(function(api) {
@@ -47,4 +48,5 @@ Package.onTest(function(api) {
   api.addFiles("tests/emails.js");
   api.addFiles("tests/defaultProvider.js");
   api.addFiles("tests/defaultHelpers.js");
+  api.addFiles("tests/defaultHooks.js");
 });
