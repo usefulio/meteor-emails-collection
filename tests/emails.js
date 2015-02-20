@@ -1,10 +1,12 @@
-var routeNumber = 1;
-var routeName;
-var streamBuffers = Npm.require('stream-buffers');
-var stream;
-var sent;
+routeNumber = 1;
+routeName = "";
+if (Meteor.isServer)
+  streamBuffers = Npm.require('stream-buffers');
 
-var testAndCleanup = function (name, fn) {
+stream = null;
+sent = null;
+
+testAndCleanup = function (name, fn) {
   Tinytest.add(name, function (test) {
     var originalRoutes = Emails.routes;
     var originalAction = Emails.routes.default.action;
@@ -17,8 +19,10 @@ var testAndCleanup = function (name, fn) {
 
     try {
       routeName = "test" + (routeNumber++);
-      stream = new streamBuffers.WritableStreamBuffer();
-      EmailTest.overrideOutputStream(stream);
+      if (Meteor.isServer) {
+        stream = new streamBuffers.WritableStreamBuffer();
+        EmailTest.overrideOutputStream(stream);
+      }
 
       fn(test);
     } finally {
@@ -28,7 +32,8 @@ var testAndCleanup = function (name, fn) {
       Emails.routes.default.beforeSend = originalBeforeSend;
       Emails.routes.default.afterSend = originalAfterSend;
 
-      EmailTest.restoreOutputStream();
+      if (Meteor.isServer)
+        EmailTest.restoreOutputStream();
     }
   });
 };
