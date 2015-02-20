@@ -27,6 +27,7 @@ Api
 * `Emails.extend(parent, route, options)` - Define a route which inherits from another route. `parent` is the name of the route to inherit from, `route` and `options` are the same as `Emails.route`.
 * `Emails.setDefaultAction(route)` - Sets a route as the default action, `controller.send(email)` will be called for the route with the name `route`.
 * `Emails.setProvider(route)` - Sets `route` as the email provider so that the route's `controller.send` method will be called when sending emails.
+- `Emails.processQueue(route)` - Process emails from the queue using `route`, `route` is optional and defaults to `provider`.
 
 Controllers
 ----------------------
@@ -69,7 +70,7 @@ function () {
 
 Future Api
 ----------------------
-- `Emails.autoProcessEmails(route)` - Process emails from the queue using `route`
+- `Emails.autoProcessQueue(route)` - Watch the emails collection and process emails as they are added to the queue. Takes the same arguments as `Emails.processQueue`.
 - `Emails.configureForwarding(fn)` - Setup an iron router route to accept callbacks from a mail server and forward them on to the appropriate user.
     + `fn` is a callback which handles requests from the mail server, you'll need to parse the request and call `Emails.send('forward', email)` with any applicable emails to forward.
     + return value is the url to the route, you'll need to call your mail provider's api to tell it to send mail to this url.

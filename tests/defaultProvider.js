@@ -43,4 +43,23 @@ if (Meteor.isServer) {
     test.equal(typeof sent, 'object');
     test.equal(sent._test_field, routeName);
   });
+
+  testAndCleanup("Emails - default provider - dequeues emails for sending", function (test) {
+    Emails.route(routeName, {
+      action: function (email) {
+        sent = email;
+      }
+    });
+
+    Emails.setDefaultAction("queue");
+    Emails.setProvider(routeName);
+    Emails.send({
+      _test_field: routeName
+    });
+
+    Emails.processQueue();
+
+    test.equal(typeof sent, 'object');
+    test.equal(sent._test_field, routeName);
+  });
 }
