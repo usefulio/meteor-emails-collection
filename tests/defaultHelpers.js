@@ -44,6 +44,23 @@ testAndCleanup("Emails - default helpers - render", function (test) {
   }); 
 });
 
+testAndCleanup("Emails - default helpers - render with helpers", function (test) {
+  Emails.routes.default.action = function (email) {
+    this.a = 1;
+    this.b = 1;
+
+    var renderedHtml = this.get("render", email.template);
+
+    test.equal(renderedHtml, "<p>sum: 2</p>");
+
+    sent = email;
+  };
+
+  Emails.send({
+    template: "withHelpers"
+  }); 
+});
+
 testAndCleanup("Emails - default helpers - render with layout", function (test) {
   Emails.routes.default.action = function (email) {
     this.message = "test";
