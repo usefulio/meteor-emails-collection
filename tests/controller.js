@@ -30,8 +30,6 @@ Tinytest.add('Emails - controllers - before send', function (test) {
     test.equal(email, mail);
     test.equal(this, context);
   });
-  test.equal(_.isArray(controller.beforeSend), true);
-  test.equal(controller.beforeSend.length, 1);
 
   controller.callHook("beforeSend", context);
   test.equal(context.sent, true);
@@ -47,14 +45,15 @@ Tinytest.add('Emails - controllers - inherited hooks are additive', function (te
   var context = {
     email: email
   };
-  parent.addHook("beforeSend", function (mail) {
-    email._test_field += "parent";
-  });
 
   var controller = parent.extend({
     beforeSend: function (mail) {
       email._test_field += "child";
     }
+  });
+
+  parent.addHook("beforeSend", function (mail) {
+    email._test_field += "parent";
   });
 
   controller.callHook("beforeSend", context);
@@ -143,25 +142,28 @@ Tinytest.add('Emails - controllers - constructor accepts options', function (tes
 });
 
 Tinytest.add('Emails - controllers - extend hooks', function (test) {
-  var parent = new EmailController();
+  var parent = new EmailController({
+    action: function (email) {}
+  });
   parent.addHook("beforeSend", function (email) {
     email.parent = true;
+    email.name = "parent";
   });
-  parent.name = "parent";
-  parent.other = "other";
 
   test.equal(typeof parent.extend, "function");
 
   var controller = parent.extend({
-    beforeSend: function (email) {}
+    beforeSend: function (email) {
+      email.name = "name";
+    }
     , name: "name"
   });
 
-  test.equal(_.isArray(controller.beforeSend), true);
-  test.equal(controller.beforeSend.length, 2);
+  var email = {};
+  controller.send(email);
 
-  test.equal(controller.name, "name");
-  test.equal(controller.other, "other");
+  test.equal(email.parent, true);
+  test.equal(email.name, "name");
 });
 
 Tinytest.add('Emails - controllers - send', function (test) {
