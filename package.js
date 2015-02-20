@@ -5,6 +5,9 @@ Package.describe({
   name: "cwohlman:emails"
 });
 
+// Required to test default provider (Email.send)
+Npm.depends({"stream-buffers": "0.2.5"});
+
 Package.onUse(function(api) {
   api.versionsFrom('METEOR@0.9.3.1');
 
@@ -30,8 +33,6 @@ Package.onTest(function(api) {
   api.use('accounts-base');
   api.use('cwohlman:emails');
   api.use('email');
-
-  api.addFiles("tests/mocks.js");
   
   api.addFiles("tests/controller.js");
   api.addFiles("tests/emails.js");
