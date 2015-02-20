@@ -38,6 +38,54 @@ Tinytest.add('Emails - controllers - before send', function (test) {
   test.equal(email.sent, true);
 });
 
+Tinytest.add('Emails - controllers - inherited hooks are additive', function (test) {
+  var parent = new EmailController();
+  
+  var email = {
+    _test_field: ""
+  };
+  var context = {
+    email: email
+  };
+  parent.addHook("beforeSend", function (mail) {
+    email._test_field += "parent";
+  });
+
+  var controller = parent.extend({
+    beforeSend: function (mail) {
+      email._test_field += "child";
+    }
+  });
+
+  controller.callHook("beforeSend", context);
+
+  test.equal(email._test_field, "parentchild");
+});
+
+Tinytest.add('Emails - controllers - child hooks are not run on parent collections', function (test) {
+  var parent = new EmailController();
+  
+  var email = {
+    _test_field: ""
+  };
+  var context = {
+    email: email
+  };
+  parent.addHook("beforeSend", function (mail) {
+    email._test_field += "parent";
+  });
+
+  var controller = parent.extend({
+    beforeSend: function (mail) {
+      email._test_field += "child";
+    }
+  });
+
+  parent.callHook("beforeSend", context);
+
+  test.equal(email._test_field, "parent");
+});
+
 Tinytest.add('Emails - controllers - afterSend', function (test) {
   var controller = new EmailController();
   
