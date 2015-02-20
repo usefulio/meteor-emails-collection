@@ -39,8 +39,8 @@ Email routes are defined using controllers `new EmailController(options)` you ca
     + `beforeSend` - A hook to be called before the action for this controller is called.
     + `afterSend` - A hook to be called after the action for this controller has completed.
     + `beforeProcessing` - A hook to be called before the send action and before the 'beforeSend' hook, this hook is run in reverse order, the last callback to be added to the beforeProcessingCallbacks list is called first.
-    + Future Api ------
     + `helpers` - An object with various helpers to make available to your email processing logic.
+    + Future Api ------
     + `config` - An object with various properties which relate to processing emails, e.g. email domain name.
 - `controller.send(email, context)` - Sends an email using this controller's action, calling appropriate hooks.
     + `email` is the email to send.
@@ -107,6 +107,7 @@ Document remaining features:
 7. Drafts
 8. Email metadata and templates
 9. Layout templates
+10. Context.get function should check 1) helpers, 2) context, 3) email
 
 Refactor library with a new, better api.
 

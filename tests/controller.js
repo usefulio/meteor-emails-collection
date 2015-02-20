@@ -246,3 +246,52 @@ Tinytest.add('Emails - controllers - send', function (test) {
   });
   test.equal(typeof sent, "object");
 });
+
+Tinytest.add('Emails - controllers - helpers', function (test) {
+  var controller = new EmailController({
+    helpers: {
+      name: function () {
+        return "test";
+      }
+    },
+    action: function () {
+      email.name = this.get('name');
+    }
+  });
+
+  var email = {};
+  controller.send(email);
+
+  test.equal(email.name, 'test');
+});
+
+Tinytest.add('Emails - controllers - helpers are inherted', function (test) {
+  var parent = new EmailController({
+    helpers: {
+      name: function () {
+        return "test";
+      },
+      age: function () {
+        return 5;
+      }
+    },
+    action: function () {
+      email.name = this.get('name');
+      email.age = this.get('age');
+    }
+  });
+
+  var controller = parent.extend({
+    helpers: {
+      age: function () {
+        return 6;
+      }
+    }
+  });
+
+  var email = {};
+  controller.send(email);
+
+  test.equal(email.name, 'test');
+  test.equal(email.age, 6);
+});
