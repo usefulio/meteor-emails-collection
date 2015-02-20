@@ -107,6 +107,33 @@ Tinytest.add('Emails - controllers - afterSend', function (test) {
   test.equal(email.sent, true);
 });
 
+Tinytest.add('Emails - controllers - beforeProcess', function (test) {
+  var parent = new EmailController({
+    action: function () {}
+  });
+  
+  parent.addHook("beforeProcess", function (email) {
+    email.name += "1";
+  });
+  parent.addHook("beforeProcess", function (email) {
+    email.name += "2";
+  });
+
+  var controller = parent.extend({
+    beforeProcess: function (email) {
+      email.name += "3";
+    }
+  });
+
+  var email = {
+    name: ""
+  };
+
+  controller.send(email);
+
+  test.equal(email.name, "321");
+});
+
 Tinytest.add('Emails - controllers - hooks run in correct order', function (test) {
   var controller = new EmailController();
   var email;
