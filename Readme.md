@@ -1,6 +1,38 @@
 Supercharged Email Sending System
 ======================
 
+How to use
+---------------------
+Install the package in your app:
+
+    meteor add cwohlman:emails
+
+Send emails
+
+    Emails.send({
+        to: "joe@example.com"
+        , from: "sam@example.com"
+        , subject: "Hi"
+        , text: "Hi Joe"
+    });
+
+Define a custom template
+
+    // server/hello.spacebars
+    <template name="hello">
+        Hi {{toUser.profile.name}},<br>
+        Welcome to our app!<br>
+    </template>
+
+Send email using your template
+
+    Emails.send({
+        toId: "123"
+        , from: "support@example.com"
+        , subject: "Welcome"
+        , template: "hello" // Template.hello also works
+    });
+
 Features
 ----------------------
 1. Unified interface for different email providers
@@ -63,7 +95,6 @@ For complex callbacks use the `this` context to access other properties e.g.
 function () {
     var email = this.email; // The email being processed, same as the first argument.
     var controller = this.controller; // The controller processing this email
-    // TODO: the this context should provide access to helpers
     var name = this.get('name', email.toId); // example of a helper
 }
 ```
@@ -89,6 +120,40 @@ Built In Routes
 - `queue` - This route will queue emails in a collection instead of sending them immediately. Use `Emails.setDefaultAction('queue')` to call this route by default instead of the `provider` route.
 - Future Api ------
 - `forward` - This route will accept emails from your mail api and deturmine who to send mail to.
+
+Built In Helpers - TODO
+----------------------
+The emails package comes with some built in helpers to make it easier to write templates and email processing logic.
+
+`toUser` - returns `Meteor.users.findOne(email.toId)`
+`fromUser` - returns `Meteor.users.findOne(email.fromId)`
+`prettyAddress` - takes a userId and returns a string in the format `First Last <email@example.com>`
+`threadId` - returns a 'threadId' which uniquely identifies this conversation.
+
+If you don't need/want these helpers you can override some or all of them by setting the default helpers host, for example:
+
+    // Override a single helper
+    Emails.routes.default.helpers.fromUser = function () { return null };
+
+    // Override all helpers
+    Emails.routes.default.helpers = {
+        test: function () {
+            return 1;
+        }
+    }
+
+Built In Hooks - TODO
+----------------------
+By default the emails package runs limited logic for you as part of a beforeProcess hook:
+    1. If toId or fromId is set, but not the to or from email address, get an email address from the users collection, and visa versa, if a to or from email is specified, but not to/from ids the hook will try to guess the id from the specified email.
+    2. If the template property is specified, and no html property is specified the hook will run the template to get html for the email.
+
+If you don't need/want the hook to run you can reset the default hooks by running:
+
+    // Remove default beforeProcess hook
+    Emails.routes.default.beforeProcess = []
+
+However if you just want to override some of the fields set by the default hook you can add your own beforeProcess hook (which will run earlier than the default hook).
 
 Templates
 ----------------------
