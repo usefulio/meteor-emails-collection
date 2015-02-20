@@ -6,8 +6,10 @@ if (Meteor.isServer)
 stream = null;
 sent = null;
 
-testAndCleanup = function (name, fn) {
-  Tinytest.add(name, function (test) {
+testAndCleanup = function (name, fn, testFnName) {
+  testFnName = testFnName || "add";
+
+  Tinytest[testFnName](name, function (test, done) {
     var originalRoutes = Emails.routes;
     var originalAction = Emails.routes.default.action;
     var originalBeforeSend = Emails.routes.default.beforeSend;
@@ -17,15 +19,7 @@ testAndCleanup = function (name, fn) {
     Emails.routes.default.beforeSend = [];
     Emails.routes.default.afterSend = [];
 
-    try {
-      routeName = "test" + (routeNumber++);
-      if (Meteor.isServer) {
-        stream = new streamBuffers.WritableStreamBuffer();
-        EmailTest.overrideOutputStream(stream);
-      }
-
-      fn(test);
-    } finally {
+    function cleanup() {
       sent = undefined;
       Emails.routes = originalRoutes;
       Emails.routes.default.action = originalAction;
@@ -36,7 +30,31 @@ testAndCleanup = function (name, fn) {
         Emails._collection.remove({});
 
       if (Meteor.isServer)
-        EmailTest.restoreOutputStream();
+        EmailTest.restoreOutputStream();      
+    }
+    
+    routeName = "test" + (routeNumber++);
+    if (Meteor.isServer) {
+      stream = new streamBuffers.WritableStreamBuffer();
+      EmailTest.overrideOutputStream(stream);
+    }
+
+    if (testFnName === "addAsync") {
+      try {
+        fn(test, function () {
+          cleanup();
+          done();
+        });
+      } catch (e) {
+        cleanup();
+        throw e;
+      }
+    } else {
+      try {
+        fn(test);
+      } finally {
+        cleanup();
+      }      
     }
   });
 };
