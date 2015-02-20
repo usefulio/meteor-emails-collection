@@ -1,3 +1,21 @@
+Supercharged Email Sending System
+======================
+
+Features
+----------------------
+1. Unified interface for different email providers
+2. Simple api for manipulating email metadata and running before and after hooks
+3. Optional queue to defer message sending (for example to a dedicated services app)
+
+TODO
+----------------------
+4. Built in support for forwarding messages between users of your app without exposing user email addresses
+5. Use spacebars templates to compose your emails
+6. Define multiple email 'routes' to handle different use cases in your app.
+7. Support for markdown in your emails
+8. Support for layout templates so you can wrap all of your emails an consistent ui
+9. 
+
 Emails for Meteor
 ======================
 Simple emails package for meteor, supports using spacebars templates for your emails, logs messages to a collection and uses the Meteor.users collection to get email addresses and additional metadata.
