@@ -295,3 +295,19 @@ Tinytest.add('Emails - controllers - helpers are inherted', function (test) {
   test.equal(email.name, 'test');
   test.equal(email.age, 6);
 });
+
+Tinytest.add('Emails - controllers - config', function (test) {
+  var controller = new EmailController({
+    config: {
+      age: 6
+    },
+    action: function () {
+      email.age = this.get('age');
+    }
+  });
+
+  var email = {};
+  controller.send(email);
+
+  test.equal(email.age, 6);
+});
