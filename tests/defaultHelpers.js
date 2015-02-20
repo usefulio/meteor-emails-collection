@@ -34,13 +34,30 @@ testAndCleanup("Emails - default helpers - render", function (test) {
 
     var renderedHtml = this.get("render", email.template);
 
-    test.matches(renderedHtml, /test/);
+    test.equal(renderedHtml, "<p>test</p>");
 
     sent = email;
   };
 
   Emails.send({
     template: "simple"
+  }); 
+});
+
+testAndCleanup("Emails - default helpers - render with layout", function (test) {
+  Emails.routes.default.action = function (email) {
+    this.message = "test";
+
+    var renderedHtml = this.get("render", email.template, email.layoutTemplate);
+
+    test.equal(renderedHtml, "<div><p>test</p></div>");
+
+    sent = email;
+  };
+
+  Emails.send({
+    template: "simple",
+    layoutTemplate: "layout"
   }); 
 });
 
