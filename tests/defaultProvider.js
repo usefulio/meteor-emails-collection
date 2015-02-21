@@ -110,6 +110,61 @@ if (Meteor.isServer) {
     test.equal(sent.from, "\"joe\" <notifications@m.example.com>");
   });
 
+  testAndCleanup("Emails - default provider - should mark messages as sent", function (test) {
+    Emails.routes.provider.action = function (email) {
+      return;
+    };
+
+    Emails.setDefaultAction("queue");
+
+    Emails.config({
+      domain: "m.example.com"
+    });
+
+    Emails.send("userMessage", {
+      fromId: Meteor.users.findOne({"profile.name": "joe"})._id
+      , toId: Meteor.users.findOne({"profile.name": "sam"})._id
+    });
+
+    Emails.processQueue();
+
+    sent = Emails._collection.findOne();
+
+    console.log('sent', sent);
+
+    test.equal(sent.sent, true);
+  });
+
+  testAndCleanup("Emails - default provider - should autoProcessQueue", function (test, done) {
+    Emails.routes.provider.action = function (email) {
+      return;
+    };
+
+    Emails.setDefaultAction("queue");
+
+    Emails.autoProcessQueue();
+
+    Emails.config({
+      domain: "m.example.com"
+    });
+
+    Emails.send("userMessage", {
+      fromId: Meteor.users.findOne({"profile.name": "joe"})._id
+      , toId: Meteor.users.findOne({"profile.name": "sam"})._id
+    });
+
+    Meteor.setTimeout(function () {
+      try {
+        sent = Emails._collection.findOne();
+        test.equal(sent.sent, true);
+      } catch (e) {
+        test.fail(e);
+      } finally {
+        done();
+      }
+    }, 10);
+  }, "addAsync");
+
   testAndCleanup("Emails - default provider - forwards messages to the appropriate user", function (test) {
     Emails.routes.default.action = function (email) {
       sent = email;

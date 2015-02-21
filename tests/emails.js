@@ -27,9 +27,14 @@ testAndCleanup = function (name, fn, testFnName) {
       Emails.routes.default.beforeSend = originalBeforeSend;
       Emails.routes.default.afterSend = originalAfterSend;
       Emails.routes.provider.action = providerAction;
-      
+
       if (Emails._collection && Meteor.isServer)
         Emails._collection.remove({});
+
+      if (Emails._observer) {
+        Emails._observer.stop();
+        delete Emails._observer;
+      }
 
       if (Meteor.isServer)
         EmailTest.restoreOutputStream();      
