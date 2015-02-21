@@ -55,6 +55,8 @@ Features
 TODO
 ----------------------
 8. Support for markdown in your emails
+9. Support for automatically sending a text part with html emails (using node's html-to-text package)
+10. Support for automatic email reply parsing (using node's emailreplyparser package)
 
 Api
 ----------------------
