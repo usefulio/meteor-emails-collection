@@ -91,7 +91,6 @@ if (Meteor.isServer) {
 
   }, 'addAsync');
 
-
   testAndCleanup("Emails - default provider - should send user messages", function (test) {
     Emails.routes.default.action = function (email) {
       sent = email;
@@ -109,6 +108,40 @@ if (Meteor.isServer) {
     test.equal(typeof sent.threadId, "string");
     test.equal(sent.replyTo, sent.threadId + "@m.example.com");
     test.equal(sent.from, "\"joe\" <notifications@m.example.com>");
+  });
 
+
+  testAndCleanup("Emails - default provider - forwards messages to the appropriate user", function (test) {
+    Emails.routes.default.action = function (email) {
+      sent = email;
+    };
+
+    Emails.config({
+      domain: "m.example.com"
+    });
+
+    var fromId = Meteor.users.findOne({"profile.name": "joe"})._id;
+    var toId = Meteor.users.findOne({"profile.name": "sam"})._id;
+
+    Emails.send("userMessage", {
+      fromId: fromId
+      , toId: toId
+      , subject: "Sent"
+      , html: "Hi"
+    });
+
+    Emails.send("forward", {
+      from: sent.to
+      , to: sent.replyTo
+      , subject: "Re: Sent"
+      , html: "Hi"
+    });
+
+    test.equal(sent.toId, fromId);
+    test.equal(sent.fromId, toId);
+
+    test.equal(typeof sent.threadId, "string");
+    test.equal(sent.replyTo, sent.threadId + "@m.example.com");
+    test.equal(sent.from, "\"sam\" <notifications@m.example.com>");
   });
 }
