@@ -33,19 +33,28 @@ Send email using your template
         , template: "hello" // Template.hello also works
     });
 
+Send an user to user email with built in user messaging system
+
+    Emails.send("userMessage", {
+        toId: "123"
+        , fromId: "456"
+        , subject: "Hi Joe"
+        , message: "Hello"
+    });
+
 Features
 ----------------------
 1. Unified interface for different email providers
 2. Simple api for manipulating email metadata and running before and after hooks
 3. Optional queue to defer message sending (for example to a dedicated services app)
 6. Define multiple email 'routes' to handle different use cases in your app.
+5. Use spacebars templates to compose your emails
+8. Support for layout templates so you can wrap all of your emails an consistent ui
 
 TODO
 ----------------------
 4. Built in support for forwarding messages between users of your app without exposing user email addresses
-5. Use spacebars templates to compose your emails
 7. Support for markdown in your emails
-8. Support for layout templates so you can wrap all of your emails an consistent ui
 
 Api
 ----------------------
@@ -117,7 +126,6 @@ Built In Routes
 - `default` - If you call `Emails.send` without a route parameter this is the route which will be called, also if you call `Emails.route` this is the route from which the newly created route will inherit
 - `provider` - This is the default provider, the default send action is `provider` and if you use an email queue, the default dequeue action is `provider`. Use `Emails.setProvider` to replace the default provider for sending emails using a mail api, leave this provider in place to use Meteor's built in Email package for sending email.
 - `queue` - This route will queue emails in a collection instead of sending them immediately. Use `Emails.setDefaultAction('queue')` to call this route by default instead of the `provider` route.
-- Future Api ------
 - `forward` - This route will accept emails from your mail api and deturmine who to send mail to.
 
 Built In Helpers

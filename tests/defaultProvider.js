@@ -90,4 +90,25 @@ if (Meteor.isServer) {
     }, 5);
 
   }, 'addAsync');
+
+
+  testAndCleanup("Emails - default provider - should send user messages", function (test) {
+    Emails.routes.default.action = function (email) {
+      sent = email;
+    };
+
+    Emails.config({
+      domain: "m.example.com"
+    });
+
+    Emails.send("userMessage", {
+      fromId: Meteor.users.findOne({"profile.name": "joe"})._id
+      , toId: Meteor.users.findOne({"profile.name": "sam"})._id
+    });
+
+    test.equal(typeof sent.threadId, "string");
+    test.equal(sent.replyTo, sent.threadId + "@m.example.com");
+    test.equal(sent.from, "\"joe\" <notifications@m.example.com>");
+
+  });
 }
