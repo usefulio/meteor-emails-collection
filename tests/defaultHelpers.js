@@ -28,6 +28,33 @@ testAndCleanup("Emails - default helpers - prettyAddress", function (test) {
   Emails.send({}); 
 });
 
+testAndCleanup("Emails - default helpers - threadId", function (test) {
+  Emails.routes.default.action = function (email) {
+    email.threadId = this.get('threadId');
+    sent = email;
+  };
+
+  Emails.send({
+    fromId: Meteor.users.findOne({"profile.name": "joe"})._id
+    , toId: Meteor.users.findOne({"profile.name": "sam"})._id
+  });
+  var firstThreadId = sent.threadId;
+  Emails.send({
+    fromId: Meteor.users.findOne({"profile.name": "joe"})._id
+    , toId: Meteor.users.findOne({"profile.name": "sam"})._id
+  });
+  var secondThreadId = sent.threadId;
+  Emails.send({
+    fromId: Meteor.users.findOne({"profile.name": "sam"})._id
+    , toId: Meteor.users.findOne({"profile.name": "joe"})._id
+  });
+  var thirdThreadId = sent.threadId;
+  test.equal(typeof firstThreadId, "string");
+  test.equal(firstThreadId, secondThreadId);
+  test.notEqual(secondThreadId, thirdThreadId);
+
+});
+
 testAndCleanup("Emails - default helpers - render", function (test) {
   Emails.routes.default.action = function (email) {
     this.message = "test";

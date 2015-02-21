@@ -128,9 +128,6 @@ The emails package comes with some built in helpers to make it easier to write t
 `toUser` - returns `Meteor.users.findOne(email.toId)`
 `fromUser` - returns `Meteor.users.findOne(email.fromId)`
 `address` - takes a userId and returns a string in the format `First Last <email@example.com>`
-
-TODO:
-
 `threadId` - returns a 'threadId' which uniquely identifies this conversation.
 
 If you don't need/want these helpers you can override some or all of them by setting the default helpers host, for example:
