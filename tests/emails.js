@@ -241,3 +241,18 @@ testAndCleanup("Emails - config - should allow us to set the default config", fu
 
   test.equal(sent._test_field, routeName);
 });
+
+testAndCleanup("Emails - alias - should allow us to set a route alias", function (test) {
+  Emails.route(routeName, {
+    action: function (email) {
+      sent = email;
+    }
+  });
+  Emails.alias("default", routeName);
+
+  Emails.send({
+    _test_field: routeName
+  });
+
+  test.equal(sent._test_field, routeName);
+});
