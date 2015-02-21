@@ -47,14 +47,14 @@ Features
 1. Unified interface for different email providers
 2. Simple api for manipulating email metadata and running before and after hooks
 3. Optional queue to defer message sending (for example to a dedicated services app)
-6. Define multiple email 'routes' to handle different use cases in your app.
+4. Define multiple email 'routes' to handle different use cases in your app.
 5. Use spacebars templates to compose your emails
-8. Support for layout templates so you can wrap all of your emails an consistent ui
+6. Support for layout templates so you can wrap all of your emails an consistent ui
+7. Built in support for forwarding messages between users of your app without exposing user email addresses
 
 TODO
 ----------------------
-4. Built in support for forwarding messages between users of your app without exposing user email addresses
-7. Support for markdown in your emails
+8. Support for markdown in your emails
 
 Api
 ----------------------
