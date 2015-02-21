@@ -227,3 +227,17 @@ testAndCleanup("Emails - setProvider - should allow us to override the default p
   test.equal(typeof sent, 'object');
   test.equal(sent._test_field, routeName);
 });
+
+testAndCleanup("Emails - config - should allow us to set the default config", function (test) {
+  Emails.routes.default.action = function (email) {
+    email._test_field = this.get('_test_field');
+    sent = email;
+  };
+  Emails.config({
+    _test_field: routeName
+  });
+
+  Emails.send({});
+
+  test.equal(sent._test_field, routeName);
+});

@@ -110,7 +110,6 @@ Config
 - To set the default provider for sending emails use `Emails.setProvider('someProvider')`
 - To set the Emails package to queue messages instead of sending them call `Emails.setDefaultAction('queue')`
 - To explicitly set the Emails package to send messages immediately (using the default provider) call `Emails.setDefaultAction('provider')`
-- Future Api ------
 - To set misc config properties call `Emails.config(options)`, or to set config properties only for specific routes, call `controller.config`.
 
 Built In Routes
