@@ -70,6 +70,10 @@ Api
 - `Emails.setProvider(route)` - Sets `route` as the email provider so that the route's `controller.send` method will be called when sending emails.
 - `Emails.processQueue(route)` - Process emails from the queue using `route`, `route` is optional and defaults to `provider`.
 - `Emails.autoProcessQueue(route)` - Watch the emails collection and process emails as they are added to the queue. Takes the same arguments as `Emails.processQueue`.
+- `Emails.configureForwarding(handler, callback)` - Setup an iron router route to accept callbacks from a mail server and forward them on to the appropriate user.
+    + `handler` is called when we recieve a request from the mail server, you'll need to parse the request and call `Emails.send('forward', email)` with any applicable emails to forward.
+    + `callback(error, url)` is a node.js style callback who's result argument is the url the mail server should forward mail to.
+    + If meteor is serving from localhost or 127.0.0.1 this method is a noop
 
 Controllers
 ----------------------
@@ -107,12 +111,6 @@ function () {
     var name = this.get('name', email.toId); // example of a helper
 }
 ```
-
-Future Api
-----------------------
-- `Emails.configureForwarding(fn)` - Setup an iron router route to accept callbacks from a mail server and forward them on to the appropriate user.
-    + `fn` is a callback which handles requests from the mail server, you'll need to parse the request and call `Emails.send('forward', email)` with any applicable emails to forward.
-    + return value is the url to the route, you'll need to call your mail provider's api to tell it to send mail to this url.
 
 Config
 ----------------------
