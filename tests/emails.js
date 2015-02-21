@@ -12,6 +12,7 @@ testAndCleanup = function (name, fn, testFnName) {
   Tinytest[testFnName](name, function (test, done) {
     var originalRoutes = Emails.routes;
     var originalAction = Emails.routes.default.action;
+    var providerAction = Emails.routes.provider.action;
     var originalBeforeSend = Emails.routes.default.beforeSend;
     var originalAfterSend = Emails.routes.default.afterSend;
 
@@ -25,7 +26,8 @@ testAndCleanup = function (name, fn, testFnName) {
       Emails.routes.default.action = originalAction;
       Emails.routes.default.beforeSend = originalBeforeSend;
       Emails.routes.default.afterSend = originalAfterSend;
-
+      Emails.routes.provider.action = providerAction;
+      
       if (Emails._collection && Meteor.isServer)
         Emails._collection.remove({});
 
