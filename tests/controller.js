@@ -344,4 +344,21 @@ Tinytest.add('Emails - controllers - get function trys all paths', function (tes
   controller.send(email, context);
 });
 
+Tinytest.add('Emails - controllers - get function works without context property', function (test) {
+  var controller = new EmailController({
+    config: {
+      config: "config"
+      , helper: "config"
+    },
+    helpers: {
+      helper: function () {
+        return "helper";
+      }
+    },
+  });
+
+  test.equal(controller.get('config'), 'config');
+  test.equal(controller.get('helper'), 'helper');
+});
+
 // XXX null should be considered a value
