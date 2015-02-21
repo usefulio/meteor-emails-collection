@@ -73,7 +73,6 @@ Api
 - `Emails.configureForwarding(handler, callback)` - Setup an iron router route to accept callbacks from a mail server and forward them on to the appropriate user.
     + `handler` is called when we recieve a request from the mail server, you'll need to parse the request and call `Emails.send('forward', email)` with any applicable emails to forward.
     + `callback(error, url)` is a node.js style callback who's result argument is the url the mail server should forward mail to.
-    + If meteor is serving from localhost or 127.0.0.1 this method is a noop
 
 Controllers
 ----------------------

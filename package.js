@@ -18,6 +18,7 @@ Package.onUse(function(api) {
   api.use('accounts-base');
   api.use('mongo');
   api.use('email');
+  api.use('iron:router@1.0.5', ['server']);
 
   api.export('Emails');
   api.export('EmailController');
@@ -35,6 +36,7 @@ Package.onTest(function(api) {
   api.use('accounts-base');
   api.use('cwohlman:emails');
   api.use('email');
+  api.use('http');
   api.use('autopublish');
   
   api.addFiles("tests/mocks.js");

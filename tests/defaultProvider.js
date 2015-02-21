@@ -110,7 +110,6 @@ if (Meteor.isServer) {
     test.equal(sent.from, "\"joe\" <notifications@m.example.com>");
   });
 
-
   testAndCleanup("Emails - default provider - forwards messages to the appropriate user", function (test) {
     Emails.routes.default.action = function (email) {
       sent = email;
@@ -136,6 +135,58 @@ if (Meteor.isServer) {
       , subject: "Re: Sent"
       , html: "Hi"
     });
+
+    test.equal(sent.toId, fromId);
+    test.equal(sent.fromId, toId);
+
+    test.equal(typeof sent.threadId, "string");
+    test.equal(sent.replyTo, sent.threadId + "@m.example.com");
+    test.equal(sent.from, "\"sam\" <notifications@m.example.com>");
+  });
+
+  testAndCleanup("Emails - default provider - configureForwarding callback", function (test) {
+    var url;
+
+    Emails.routes.default.action = function (email) {
+      sent = email;
+    };
+
+    Emails.config({
+      domain: "m.example.com"
+    });
+
+    Emails.configureForwarding(function (request) {
+      var recieved = request.body;
+
+      console.log('recieved', recieved);
+
+      Emails.send("forward", {
+        from: recieved.to
+        , to: recieved.replyTo
+        , subject: "Re: Sent"
+        , html: "Hi"
+      });
+    }, function (error, result) {
+      url = result;
+    });
+
+    var fromId = Meteor.users.findOne({"profile.name": "joe"})._id;
+    var toId = Meteor.users.findOne({"profile.name": "sam"})._id;
+
+    Emails.send("userMessage", {
+      fromId: fromId
+      , toId: toId
+      , subject: "Sent"
+      , html: "Hi"
+    });
+
+    console.log('sent', sent);
+
+    HTTP.post(url, {
+      data: sent
+    });
+
+    console.log('sent', sent);
 
     test.equal(sent.toId, fromId);
     test.equal(sent.fromId, toId);
