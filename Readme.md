@@ -145,7 +145,7 @@ If you don't need/want these helpers you can override some or all of them by set
         }
     }
 
-Built In Hooks - TODO
+Built In Hooks
 ----------------------
 By default the emails package runs limited logic for you as part of a beforeProcess hook:
     1. If toId or fromId is set, but not the to or from email address, get an email address from the users collection, and visa versa, if a to or from email is specified, but not to/from ids the hook will try to guess the id from the specified email.
