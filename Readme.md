@@ -81,3 +81,20 @@ Proposed Api
         }
     })
     ```
+
+3. `Emails =`
+
+    ```javascript
+    {
+        route: function (name, options) {
+            this.routes[name] = this._controller.extend(options);
+        }
+        , send: function (name, options) {
+            this.routes[name].send(options);
+        }
+        , config: function (options) {
+            // we need to properly deal with hooks, etc.
+            _.extend(this._controller, options);
+        }
+    }
+    ```
