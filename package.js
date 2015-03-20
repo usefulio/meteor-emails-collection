@@ -1,6 +1,6 @@
 Package.describe({
   summary: "Email queing and reply processing for meteor.",
-  version: "0.3.4",
+  version: "0.4.0-0",
   git: "https://github.com/usefulio/meteor-emails-collection.git",
   name: "cwohlman:emails"
 });
@@ -14,11 +14,13 @@ Package.onUse(function(api) {
   api.use('underscore');
   api.use('accounts-base');
   api.use('mongo');
+  api.use('check');
 
+  api.addFiles('lib/controller.js');
+  api.addFiles('lib/emails.js');
+
+  api.export('EmailController');
   api.export('Emails');
-
-  api.addFiles('emails.js', ['server']);
-  api.addFiles('emailsDefaultProvider.js', ['server']);
 });
 
 Package.onTest(function(api) {
@@ -28,9 +30,7 @@ Package.onTest(function(api) {
   api.use('cwohlman:emails');
   api.use('email');
 
-  api.addFiles('test_templates/simple.spacebars', 'server');
-  api.addFiles('test_templates/layout.spacebars', 'server');
-  api.addFiles('test_templates/withHelpers.spacebars', 'server');
-  api.addFiles('test_templates/withHelpers.js', 'server');
-  api.addFiles('emails-tests.js');
+
+  api.addFiles('tests/controller.js');
+  api.addFiles('tests/emails.js');
 });
