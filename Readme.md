@@ -1,5 +1,12 @@
 Super Awesome Meteor Emails
 ===================
+Sends email using an intuitive api
+
+Alpha!
+
+
+About
+-------------------
 
 Proposed Api
 -------------------
